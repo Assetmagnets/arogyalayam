@@ -1,0 +1,56 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "typeRoots": [
+            "../frontend/node_modules/@types",
+            "../backend/node_modules/@types"
+        ],
+        "paths": {
+            "@prisma/client": [
+                "../backend/node_modules/@prisma/client"
+            ],
+            "@prisma/client/*": [
+                "../backend/node_modules/@prisma/client/*"
+            ],
+            "zod": [
+                "../backend/node_modules/zod"
+            ],
+            "react": [
+                "../frontend/node_modules/@types/react"
+            ],
+            "react/*": [
+                "../frontend/node_modules/@types/react/*"
+            ],
+            "react-hook-form": [
+                "../frontend/node_modules/react-hook-form"
+            ],
+            "@hookform/resolvers/*": [
+                "../frontend/node_modules/@hookform/resolvers/*"
+            ]
+        }
+    },
+    "include": [
+        "./**/*.ts",
+        "./**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

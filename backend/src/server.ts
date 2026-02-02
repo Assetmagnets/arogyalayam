@@ -185,6 +185,9 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Start server
-startServer();
+// Start server only if not running in Vercel (serverless) and executed directly
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    startServer();
+}
 
 export default app;

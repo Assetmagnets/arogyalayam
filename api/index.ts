@@ -365,37 +365,72 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).end();
     }
 
-    const { url, method } = req;
-    const path = url?.replace(/\?.*$/, '') || '';
+    try {
+        const { url, method } = req;
+        // Get path from URL, handle various formats
+        let path = url?.replace(/\?.*$/, '') || '';
 
-    // Route matching
-    if (path === '/api/v1/health' && method === 'GET') {
-        return handleHealth(res);
+        // Debug endpoint - always works
+        if (path === '/api' || path === '/api/' || path.endsWith('/api')) {
+            return res.status(200).json({
+                success: true,
+                message: 'HMS API is running',
+                debug: {
+                    url,
+                    path,
+                    method,
+                    hasDbUrl: !!process.env.DATABASE_URL,
+                    hasJwtSecret: !!process.env.JWT_SECRET,
+                    nodeEnv: process.env.NODE_ENV,
+                },
+            });
+        }
+
+        // Normalize path - remove trailing slashes and handle /api prefix
+        if (!path.startsWith('/api')) {
+            path = '/api' + path;
+        }
+
+        // Route matching
+        if ((path === '/api/v1/health' || path === '/api/api/v1/health') && method === 'GET') {
+            return handleHealth(res);
+        }
+
+        if ((path === '/api/v1/auth/login' || path === '/api/api/v1/auth/login') && method === 'POST') {
+            return handleLogin(req, res);
+        }
+
+        if ((path === '/api/v1/auth/me' || path === '/api/api/v1/auth/me') && method === 'GET') {
+            return handleGetMe(req, res);
+        }
+
+        if ((path === '/api/v1/patients' || path === '/api/api/v1/patients') && method === 'GET') {
+            return handleGetPatients(req, res);
+        }
+
+        if ((path === '/api/v1/appointments' || path === '/api/api/v1/appointments') && method === 'GET') {
+            return handleGetAppointments(req, res);
+        }
+
+        if ((path === '/api/v1/doctors' || path === '/api/api/v1/doctors') && method === 'GET') {
+            return handleGetDoctors(req, res);
+        }
+
+        // 404 for unmatched API routes
+        return res.status(404).json({
+            success: false,
+            error: { code: 'NOT_FOUND', message: `Endpoint ${method} ${path} not found` },
+            debug: { originalUrl: url, normalizedPath: path }
+        });
+    } catch (error: any) {
+        console.error('Handler error:', error);
+        return res.status(500).json({
+            success: false,
+            error: {
+                code: 'HANDLER_ERROR',
+                message: error?.message || 'Unknown error',
+            }
+        });
     }
-
-    if (path === '/api/v1/auth/login' && method === 'POST') {
-        return handleLogin(req, res);
-    }
-
-    if (path === '/api/v1/auth/me' && method === 'GET') {
-        return handleGetMe(req, res);
-    }
-
-    if (path === '/api/v1/patients' && method === 'GET') {
-        return handleGetPatients(req, res);
-    }
-
-    if (path === '/api/v1/appointments' && method === 'GET') {
-        return handleGetAppointments(req, res);
-    }
-
-    if (path === '/api/v1/doctors' && method === 'GET') {
-        return handleGetDoctors(req, res);
-    }
-
-    // 404 for unmatched API routes
-    return res.status(404).json({
-        success: false,
-        error: { code: 'NOT_FOUND', message: `Endpoint ${method} ${path} not found` }
-    });
 }
+

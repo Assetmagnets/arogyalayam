@@ -1,3 +1,29 @@
 {
-    "version": 2
+    "version": 2,
+    "buildCommand": "cd frontend && npm install && npm run build",
+    "outputDirectory": "frontend/dist",
+    "installCommand": "npm install && cd api && npm install && npx prisma generate",
+    "functions": {
+        "api/**/*.ts": {
+            "runtime": "@vercel/node@3"
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api/v1/health",
+            "destination": "/api/v1/health.ts"
+        },
+        {
+            "source": "/api/v1/auth/login",
+            "destination": "/api/v1/auth/login.ts"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/index.ts"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
 }

@@ -1,17 +1,31 @@
 {
     "version": 2,
-    "framework": null,
-    "buildCommand": "cd frontend && npm install && npm run build",
-    "outputDirectory": "frontend/dist",
-    "installCommand": "npm install && cd api && npm install && npx prisma generate",
-    "rewrites": [
+    "functions": {
+        "api/index.ts": {
+            "runtime": "@vercel/node@3",
+            "maxDuration": 30
+        }
+    },
+    "builds": [
         {
-            "source": "/api/:path*",
-            "destination": "/api"
+            "src": "frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/index.ts"
         },
         {
-            "source": "/((?!api).*)",
-            "destination": "/index.html"
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/frontend/$1"
         }
     ]
 }

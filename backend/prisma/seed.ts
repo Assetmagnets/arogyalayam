@@ -123,7 +123,7 @@ async function main() {
     // ========================================================================
     console.log('Creating permissions...');
 
-    const modules = ['patients', 'appointments', 'doctors', 'emr', 'prescriptions', 'pharmacy', 'lab', 'billing', 'users', 'reports'];
+    const modules = ['patients', 'appointments', 'doctors', 'emr', 'prescriptions', 'pharmacy', 'lab', 'billing', 'users', 'reports', 'settings'];
     const actions = ['create', 'read', 'update', 'delete'];
 
     const permissions = [];
@@ -155,6 +155,16 @@ async function main() {
             where: { roleId_permissionId: { roleId: superAdminRole.id, permissionId: perm.id } },
             update: {},
             create: { roleId: superAdminRole.id, permissionId: perm.id },
+        });
+    }
+
+    // Hospital Admin gets all permissions (like Super Admin)
+    const hospitalAdminRole = roleMap.get('HOSPITAL_ADMIN')!;
+    for (const perm of permissions) {
+        await prisma.rolePermission.upsert({
+            where: { roleId_permissionId: { roleId: hospitalAdminRole.id, permissionId: perm.id } },
+            update: {},
+            create: { roleId: hospitalAdminRole.id, permissionId: perm.id },
         });
     }
 

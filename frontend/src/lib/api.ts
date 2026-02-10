@@ -69,9 +69,24 @@ class ApiClient {
             body: data ? JSON.stringify(data) : undefined,
         });
 
-        const json = await response.json();
+        let json;
+        try {
+            const text = await response.text();
+            json = text ? JSON.parse(text) : {};
+        } catch {
+            json = {};
+        }
 
         if (!response.ok) {
+            if (response.status === 429) {
+                const error = new Error('Too many requests. Please wait a moment and try again.') as Error & {
+                    code?: string;
+                    status?: number;
+                };
+                error.code = 'RATE_LIMITED';
+                error.status = 429;
+                throw error;
+            }
             const error = new Error(json.error?.message || 'Request failed') as Error & {
                 code?: string;
                 status?: number;

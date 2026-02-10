@@ -3,42 +3,67 @@
 // Application settings and configuration
 // ============================================================================
 
-import { Settings, Building2, Users, Shield, Bell, Palette, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Settings, Building2, Users, Shield, Bell, Palette, Globe, Boxes } from 'lucide-react';
 
 const settingsSections = [
     {
         icon: Building2,
         title: 'Hospital Settings',
         description: 'Configure hospital information, branding, and contact details',
+        path: '/settings/hospital',
     },
     {
         icon: Users,
         title: 'Department Management',
         description: 'Add, edit, or remove hospital departments',
+        path: '/settings/departments',
     },
     {
         icon: Shield,
         title: 'Roles & Permissions',
         description: 'Manage user roles and access control',
+        path: '/settings/roles',
+    },
+    {
+        icon: Boxes,
+        title: 'Module Settings',
+        description: 'Enable or disable sidebar menu items',
+        path: '/settings/modules',
     },
     {
         icon: Bell,
         title: 'Notifications',
         description: 'Configure SMS, WhatsApp, and email notifications',
+        path: '/settings/notifications',
+        comingSoon: true,
     },
     {
         icon: Palette,
         title: 'Appearance',
         description: 'Customize theme, colors, and display preferences',
+        path: '/settings/appearance',
+        comingSoon: true,
     },
     {
         icon: Globe,
         title: 'Localization',
         description: 'Language, timezone, and regional settings',
+        path: '/settings/localization',
+        comingSoon: true,
     },
 ];
 
 export default function SettingsPage() {
+    const navigate = useNavigate();
+
+    const handleClick = (section: typeof settingsSections[0]) => {
+        if (section.comingSoon) {
+            return;
+        }
+        navigate(section.path);
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -57,9 +82,20 @@ export default function SettingsPage() {
                 {settingsSections.map((section) => (
                     <button
                         key={section.title}
-                        className="bg-card rounded-xl border border-border p-6 text-left hover:border-primary/50 hover:shadow-md transition-all group"
+                        onClick={() => handleClick(section)}
+                        disabled={section.comingSoon}
+                        className={`bg-card rounded-xl border border-border p-6 text-left transition-all group relative ${section.comingSoon
+                            ? 'opacity-60 cursor-not-allowed'
+                            : 'hover:border-primary/50 hover:shadow-md'
+                            }`}
                     >
-                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                        {section.comingSoon && (
+                            <span className="absolute top-2 right-2 px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
+                                Coming Soon
+                            </span>
+                        )}
+                        <div className={`w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 transition-colors ${!section.comingSoon ? 'group-hover:bg-primary/20' : ''
+                            }`}>
                             <section.icon className="w-6 h-6 text-primary" />
                         </div>
                         <h3 className="font-semibold text-foreground mb-1">

@@ -132,6 +132,34 @@ enum BatchStatus {
   RECALLED
 }
 
+// IPD (Inpatient) Enums
+enum AdmissionStatus {
+  ADMITTED
+  TRANSFERRED
+  DISCHARGED
+  EXPIRED
+  LAMA  // Left Against Medical Advice
+}
+
+enum BedStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+}
+
+enum WardType {
+  GENERAL
+  SEMI_PRIVATE
+  PRIVATE
+  ICU
+  NICU
+  PICU
+  CCU
+  ISOLATION
+  EMERGENCY
+}
+
 // ============================================================================
 // MULTI-TENANCY: HOSPITAL
 // ============================================================================
@@ -167,6 +195,9 @@ model Hospital {
   logoUrl           String?
   primaryColor      String?
   
+  // Module visibility (which sidebar modules are enabled)
+  enabledModules    String[]  @default(["dashboard", "patients", "appointments", "emr", "pharmacy", "lab", "billing", "users"])
+  
   // Audit
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -186,6 +217,8 @@ model Hospital {
   services          ServiceMaster[]
   insurancePlans    InsurancePlan[]
   uhidSequences     UhidSequence[]
+  wards             Ward[]
+  admissions        Admission[]
 
   @@index([code])
   @@index([deletedAt])
@@ -369,6 +402,7 @@ model Patient {
   prescriptions       Prescription[]
   invoices            Invoice[]
   vitalRecords        Vital[]
+  admissions          Admission[]
 
   @@index([hospitalId])
   @@index([uhid])
@@ -463,6 +497,9 @@ model Doctor {
   appointments        Appointment[]
   opdQueues           OpdQueue[]
   medicalRecords      MedicalRecord[]
+  admissionsAsAdmitting Admission[] @relation("AdmittingDoctor")
+  admissionsAsAttending Admission[] @relation("AttendingDoctor")
+  doctorRounds        DoctorRound[]
 
   @@index([hospitalId])
   @@index([departmentId])
@@ -1333,4 +1370,274 @@ model Payment {
 
   @@index([invoiceId])
   @@index([paymentDate])
+}
+
+// ============================================================================
+// IPD - INPATIENT DEPARTMENT
+// ============================================================================
+
+model Ward {
+  id              String      @id @default(cuid())
+  hospitalId      String
+  hospital        Hospital    @relation(fields: [hospitalId], references: [id])
+  
+  // Ward Info
+  name            String      // "General Ward A", "ICU", "Private Room Block"
+  code            String      // "GWA", "ICU", "PVT"
+  type            WardType    @default(GENERAL)
+  floor           String?     // "Ground Floor", "1st Floor"
+  building        String?     // For multi-building hospitals
+  
+  // Capacity
+  totalBeds       Int         @default(0)
+  
+  // Pricing
+  dailyRate       Decimal     @db.Decimal(10, 2) @default(0)
+  
+  // Contact
+  nursingStation  String?     // Nursing station extension/number
+  inCharge        String?     // Ward in-charge name
+  
+  // Settings
+  isActive        Boolean     @default(true)
+  displayOrder    Int         @default(0)
+  
+  // Audit
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
+  createdBy       String
+  updatedBy       String
+  
+  // Relations
+  beds            Bed[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+  @@index([type])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+model Bed {
+  id              String      @id @default(cuid())
+  wardId          String
+  ward            Ward        @relation(fields: [wardId], references: [id])
+  
+  // Bed Info
+  bedNumber       String      // "101", "ICU-1", "A-12"
+  bedType         String      @default("Regular") // Regular, Electric, ICU, Ventilator
+  
+  // Status
+  status          BedStatus   @default(AVAILABLE)
+  
+  // Pricing (override ward rate if different)
+  dailyRate       Decimal?    @db.Decimal(10, 2)
+  
+  // Features
+  hasOxygen       Boolean     @default(false)
+  hasMonitor      Boolean     @default(false)
+  hasVentilator   Boolean     @default(false)
+  
+  // Position
+  floor           String?
+  wing            String?     // "East Wing", "West Wing"
+  
+  // Settings
+  isActive        Boolean     @default(true)
+  
+  // Audit
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
+  createdBy       String
+  updatedBy       String
+  
+  // Relations
+  admissions      Admission[]
+  bedTransfersFrom BedTransfer[] @relation("FromBed")
+  bedTransfersTo   BedTransfer[] @relation("ToBed")
+
+  @@unique([wardId, bedNumber])
+  @@index([wardId])
+  @@index([status])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+model Admission {
+  id                  String          @id @default(cuid())
+  hospitalId          String
+  hospital            Hospital        @relation(fields: [hospitalId], references: [id])
+  
+  // Admission Number
+  admissionNo         String          @unique  // "ADM-2602-0001"
+  
+  // Patient
+  patientId           String
+  patient             Patient         @relation(fields: [patientId], references: [id])
+  
+  // Admitting Doctor
+  admittingDoctorId   String
+  admittingDoctor     Doctor          @relation("AdmittingDoctor", fields: [admittingDoctorId], references: [id])
+  
+  // Attending Doctor (may differ from admitting)
+  attendingDoctorId   String?
+  attendingDoctor     Doctor?         @relation("AttendingDoctor", fields: [attendingDoctorId], references: [id])
+  
+  // Current Bed
+  bedId               String
+  bed                 Bed             @relation(fields: [bedId], references: [id])
+  
+  // Admission Details
+  admissionDate       DateTime        @default(now())
+  admissionType       String          @default("ELECTIVE") // ELECTIVE, EMERGENCY
+  admissionReason     String
+  chiefComplaint      String?
+  provisionalDiagnosis String?
+  
+  // Status
+  status              AdmissionStatus @default(ADMITTED)
+  
+  // Expected
+  expectedStayDays    Int?
+  expectedDischarge   DateTime?
+  
+  // Discharge Info
+  dischargeDate       DateTime?
+  dischargeType       String?         // Normal, LAMA, Referred, Expired, Absconded
+  dischargeSummary    String?
+  dischargeAdvice     String?
+  followUpDate        DateTime?
+  
+  // Insurance
+  isInsured           Boolean         @default(false)
+  insuranceApprovalNo String?
+  insuranceApprovedAmount Decimal?    @db.Decimal(12, 2)
+  
+  // Audit
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  deletedAt           DateTime?
+  createdBy           String
+  updatedBy           String
+  
+  // Relations
+  nursingNotes        NursingNote[]
+  doctorRounds        DoctorRound[]
+  bedTransfers        BedTransfer[]
+
+  @@index([hospitalId])
+  @@index([patientId])
+  @@index([admittingDoctorId])
+  @@index([bedId])
+  @@index([status])
+  @@index([admissionDate])
+  @@index([deletedAt])
+}
+
+model NursingNote {
+  id              String      @id @default(cuid())
+  admissionId     String
+  admission       Admission   @relation(fields: [admissionId], references: [id])
+  
+  // Note Details
+  noteType        String      @default("ROUTINE") // ROUTINE, VITALS, MEDICATION, OBSERVATION, PROCEDURE, HANDOVER
+  shift           String?     // Morning, Evening, Night
+  
+  // Content
+  content         String
+  
+  // Vitals (optional, for vitals type notes)
+  temperature     Decimal?    @db.Decimal(4, 1)
+  bpSystolic      Int?
+  bpDiastolic     Int?
+  pulseRate       Int?
+  respiratoryRate Int?
+  spO2            Int?
+  
+  // Recording Info
+  recordedAt      DateTime    @default(now())
+  recordedBy      String      // User ID
+  recordedByName  String?     // Snapshot of nurse name
+  
+  // Audit
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([admissionId])
+  @@index([noteType])
+  @@index([recordedAt])
+}
+
+model DoctorRound {
+  id              String      @id @default(cuid())
+  admissionId     String
+  admission       Admission   @relation(fields: [admissionId], references: [id])
+  
+  // Doctor
+  doctorId        String
+  doctor          Doctor      @relation(fields: [doctorId], references: [id])
+  
+  // Round Details
+  roundDate       DateTime    @default(now())
+  roundType       String      @default("ROUTINE") // ROUTINE, MORNING, EVENING, EMERGENCY
+  
+  // Clinical Notes
+  clinicalNotes   String?
+  assessment      String?
+  plan            String?
+  orders          String?     // Treatment orders, investigations
+  
+  // Review
+  reviewStatus    String?     // Stable, Improving, Critical, etc.
+  escalationNeeded Boolean    @default(false)
+  
+  // Audit
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  createdBy       String
+  updatedBy       String
+
+  @@index([admissionId])
+  @@index([doctorId])
+  @@index([roundDate])
+}
+
+model BedTransfer {
+  id              String      @id @default(cuid())
+  admissionId     String
+  admission       Admission   @relation(fields: [admissionId], references: [id])
+  
+  // From
+  fromBedId       String
+  fromBed         Bed         @relation("FromBed", fields: [fromBedId], references: [id])
+  
+  // To
+  toBedId         String
+  toBed           Bed         @relation("ToBed", fields: [toBedId], references: [id])
+  
+  // Transfer Details
+  transferDate    DateTime    @default(now())
+  reason          String?     // Upgrade, Downgrade, Patient Request, Medical Necessity
+  notes           String?
+  
+  // Audit
+  createdAt       DateTime    @default(now())
+  createdBy       String
+
+  @@index([admissionId])
+  @@index([fromBedId])
+  @@index([toBedId])
+  @@index([transferDate])
+}
+
+model AdmissionSequence {
+  id          String   @id @default(cuid())
+  hospitalId  String
+  yearMonth   String   // Format: YYMM (e.g., "2602" for Feb 2026)
+  lastSeq     Int      @default(0)
+  
+  @@unique([hospitalId, yearMonth])
+  @@index([hospitalId])
 }

@@ -44,8 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 if (storedUser && accessToken) {
                     setUser(JSON.parse(storedUser));
-                    // Verify token is still valid
-                    await refreshTokens();
                 }
             } catch (error) {
                 // Clear invalid tokens

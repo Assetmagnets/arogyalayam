@@ -14,12 +14,22 @@ import PatientRegistrationPage from './pages/patients/PatientRegistrationPage';
 import PatientDetailsPage from './pages/patients/PatientDetailsPage';
 import AppointmentsPage from './pages/appointments/AppointmentsPage';
 import QueueDisplayPage from './pages/appointments/QueueDisplayPage';
+import OpdDashboardPage from './pages/opd/OpdDashboardPage';
+import DoctorWorkstationPage from './pages/opd/DoctorWorkstationPage';
+import IpdDashboardPage from './pages/ipd/IpdDashboardPage';
+import AdmitPatientPage from './pages/ipd/AdmitPatientPage';
+import IpdPatientPage from './pages/ipd/IpdPatientPage';
+import DischargePage from './pages/ipd/DischargePage';
 import UsersPage from './pages/users/UsersPage';
 import EMRPage from './pages/emr/EMRPage';
 import PharmacyPage from './pages/pharmacy/PharmacyPage';
 import LaboratoryPage from './pages/lab/LaboratoryPage';
 import BillingPage from './pages/billing/BillingPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import HospitalSettingsPage from './pages/settings/HospitalSettingsPage';
+import DepartmentManagementPage from './pages/settings/DepartmentManagementPage';
+import RolesPermissionsPage from './pages/settings/RolesPermissionsPage';
+import ModulesSettingsPage from './pages/settings/ModulesSettingsPage';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -68,6 +78,16 @@ function App() {
                     {/* Appointments */}
                     <Route path="/appointments" element={<AppointmentsPage />} />
 
+                    {/* OPD */}
+                    <Route path="/opd" element={<OpdDashboardPage />} />
+                    <Route path="/opd/workstation" element={<DoctorWorkstationPage />} />
+
+                    {/* IPD */}
+                    <Route path="/ipd" element={<IpdDashboardPage />} />
+                    <Route path="/ipd/admit" element={<AdmitPatientPage />} />
+                    <Route path="/ipd/patient/:id" element={<IpdPatientPage />} />
+                    <Route path="/ipd/discharge/:id" element={<DischargePage />} />
+
                     {/* Users */}
                     <Route path="/users" element={<UsersPage />} />
 
@@ -85,6 +105,10 @@ function App() {
 
                     {/* Settings */}
                     <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/settings/hospital" element={<HospitalSettingsPage />} />
+                    <Route path="/settings/departments" element={<DepartmentManagementPage />} />
+                    <Route path="/settings/roles" element={<RolesPermissionsPage />} />
+                    <Route path="/settings/modules" element={<ModulesSettingsPage />} />
                 </Route>
 
                 {/* Public Routes */}

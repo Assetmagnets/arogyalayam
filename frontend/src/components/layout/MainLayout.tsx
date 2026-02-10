@@ -6,6 +6,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api';
 import {
     LayoutDashboard,
     Users,
@@ -21,18 +22,23 @@ import {
     Bell,
     Search,
     UserCog,
+    Stethoscope,
+    BedDouble,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Patients', href: '/patients', icon: Users },
-    { name: 'Appointments', href: '/appointments', icon: Calendar },
-    { name: 'EMR', href: '/emr', icon: FileText },
-    { name: 'Pharmacy', href: '/pharmacy', icon: Pill },
-    { name: 'Laboratory', href: '/lab', icon: TestTube2 },
-    { name: 'Billing', href: '/billing', icon: Receipt },
-    { name: 'Users', href: '/users', icon: UserCog },
+// All available navigation items with their module codes
+const allNavigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, code: 'dashboard' },
+    { name: 'Patients', href: '/patients', icon: Users, code: 'patients' },
+    { name: 'Appointments', href: '/appointments', icon: Calendar, code: 'appointments' },
+    { name: 'OPD', href: '/opd', icon: Stethoscope, code: 'opd' },
+    { name: 'IPD', href: '/ipd', icon: BedDouble, code: 'ipd' },
+    { name: 'EMR', href: '/emr', icon: FileText, code: 'emr' },
+    { name: 'Pharmacy', href: '/pharmacy', icon: Pill, code: 'pharmacy' },
+    { name: 'Laboratory', href: '/lab', icon: TestTube2, code: 'lab' },
+    { name: 'Billing', href: '/billing', icon: Receipt, code: 'billing' },
+    { name: 'Users', href: '/users', icon: UserCog, code: 'users' },
 ];
 
 const bottomNav = [
@@ -43,6 +49,35 @@ export default function MainLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [enabledModules, setEnabledModules] = useState<string[]>([]);
+    const [modulesLoaded, setModulesLoaded] = useState(false);
+
+    // Fetch enabled modules on mount
+    useEffect(() => {
+        const fetchEnabledModules = async () => {
+            try {
+                const response = await api.get<{ enabledModules: string[] }>('/settings/modules');
+                if (response.success) {
+                    setEnabledModules(response.data.enabledModules);
+                }
+            } catch (error) {
+                console.error('Failed to fetch enabled modules:', error);
+                // Default to showing all modules if API fails
+                setEnabledModules(allNavigation.map((n) => n.code));
+            } finally {
+                setModulesLoaded(true);
+            }
+        };
+
+        fetchEnabledModules();
+    }, []);
+
+    // Filter navigation based on enabled modules
+    const navigation = useMemo(() => {
+        if (!modulesLoaded) return allNavigation; // Show all while loading
+        const enabledSet = new Set(enabledModules);
+        return allNavigation.filter((item) => enabledSet.has(item.code));
+    }, [enabledModules, modulesLoaded]);
 
     const handleLogout = async () => {
         await logout();

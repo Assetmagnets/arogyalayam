@@ -21,6 +21,9 @@ import patientRoutes from './routes/patients.routes.js';
 import appointmentRoutes from './routes/appointments.routes.js';
 import doctorRoutes from './routes/doctors.routes.js';
 import userRoutes from './routes/users.routes.js';
+import settingsRoutes from './routes/settings.routes.js';
+import opdRoutes from './routes/opd.routes.js';
+import ipdRoutes from './routes/ipd.routes.js';
 
 // ============================================================================
 // APP SETUP
@@ -126,6 +129,9 @@ app.use(`${API_PREFIX}/patients`, patientRoutes);
 app.use(`${API_PREFIX}/appointments`, appointmentRoutes);
 app.use(`${API_PREFIX}/doctors`, doctorRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/settings`, settingsRoutes);
+app.use(`${API_PREFIX}/opd`, opdRoutes);
+app.use(`${API_PREFIX}/ipd`, ipdRoutes);
 
 // ============================================================================
 // ERROR HANDLING

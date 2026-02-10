@@ -120,6 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     lastName: user.lastName,
                     hospitalId: user.hospitalId,
                     role: user.role.name,
+                    roleCode: user.role.code || user.role.name,
                     permissions,
                 },
             },

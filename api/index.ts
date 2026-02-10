@@ -180,6 +180,7 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
                     lastName: user.lastName,
                     hospitalId: user.hospitalId,
                     role: user.role.name,
+                    roleCode: user.role.code || user.role.name,
                     permissions,
                 },
             },
@@ -414,6 +415,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if ((path === '/api/v1/doctors' || path === '/api/api/v1/doctors') && method === 'GET') {
             return handleGetDoctors(req, res);
+        }
+
+        // Logout - just return success (stateless JWT)
+        if ((path === '/api/v1/auth/logout' || path === '/api/api/v1/auth/logout') && method === 'POST') {
+            return res.status(200).json({ success: true, message: 'Logged out successfully' });
+        }
+
+        // Auth refresh - return error (not implemented in serverless)
+        if ((path === '/api/v1/auth/refresh' || path === '/api/api/v1/auth/refresh') && method === 'POST') {
+            return res.status(401).json({
+                success: false,
+                error: { code: 'NOT_IMPLEMENTED', message: 'Token refresh not available. Please login again.' }
+            });
         }
 
         // 404 for unmatched API routes

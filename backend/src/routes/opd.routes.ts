@@ -333,7 +333,7 @@ router.post(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { doctorId } = req.params;
-            const hospitalId = req.user!.hospitalId;
+
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);

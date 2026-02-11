@@ -249,7 +249,7 @@ export default function IpdDashboardPage() {
                         </h2>
                     </div>
                     <div className="p-4 space-y-4">
-                        {dashboard?.wardOccupancy.map((ward) => (
+                        {(dashboard?.wardOccupancy || []).map((ward) => (
                             <div key={ward.id} className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">

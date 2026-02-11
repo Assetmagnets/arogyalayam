@@ -88,6 +88,124 @@ const BedTransferSchema = z.object({
 });
 
 // ============================================================================
+// IPD DASHBOARD
+// ============================================================================
+
+/**
+ * GET /api/v1/ipd/dashboard
+ * Get IPD dashboard statistics
+ */
+router.get(
+    '/dashboard',
+    authenticate,
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const hospitalId = req.user!.hospitalId;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // Bed statistics
+            const bedStats = await prisma.bed.groupBy({
+                by: ['status'],
+                where: {
+                    ward: { hospitalId },
+                    deletedAt: null,
+                    isActive: true,
+                },
+                _count: true,
+            });
+
+            const totalBeds = bedStats.reduce((acc, curr) => acc + curr._count, 0);
+            const bedsByStatus = bedStats.reduce((acc, curr) => {
+                acc[curr.status] = curr._count;
+                return acc;
+            }, {} as Record<string, number>);
+
+            // Admission statistics
+            const [currentlyAdmitted, todayAdmissions, todayDischarges] = await Promise.all([
+                prisma.admission.count({
+                    where: {
+                        hospitalId,
+                        status: 'ADMITTED',
+                        deletedAt: null,
+                    },
+                }),
+                prisma.admission.count({
+                    where: {
+                        hospitalId,
+                        admissionDate: {
+                            gte: today,
+                            lt: tomorrow,
+                        },
+                        deletedAt: null,
+                    },
+                }),
+                prisma.admission.count({
+                    where: {
+                        hospitalId,
+                        status: 'DISCHARGED',
+                        dischargeDate: {
+                            gte: today,
+                            lt: tomorrow,
+                        },
+                        deletedAt: null,
+                    },
+                }),
+            ]);
+
+            // Ward occupancy
+            const wards = await prisma.ward.findMany({
+                where: {
+                    hospitalId,
+                    deletedAt: null,
+                },
+                include: {
+                    beds: {
+                        where: {
+                            deletedAt: null,
+                            isActive: true,
+                        },
+                    },
+                },
+            });
+
+            const wardOccupancy = wards.map((ward) => {
+                const total = ward.beds.length;
+                const occupied = ward.beds.filter((b) => b.status === 'OCCUPIED' || b.status === 'RESERVED').length;
+                return {
+                    id: ward.id,
+                    name: ward.name,
+                    type: ward.type,
+                    totalBeds: total,
+                    occupiedBeds: occupied,
+                    occupancyRate: total > 0 ? Math.round((occupied / total) * 100) : 0,
+                };
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    beds: {
+                        total: totalBeds,
+                        byStatus: bedsByStatus,
+                    },
+                    admissions: {
+                        currentlyAdmitted,
+                        todayAdmissions,
+                        todayDischarges,
+                    },
+                    wardOccupancy,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+// ============================================================================
 // WARD MANAGEMENT
 // ============================================================================
 

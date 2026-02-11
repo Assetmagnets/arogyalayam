@@ -307,7 +307,7 @@ export default function OpdDashboardPage() {
                                 <AlertCircle className="w-8 h-8 mb-2" />
                                 <p>Select a doctor to view queue</p>
                             </div>
-                        ) : queue.length === 0 ? (
+                        ) : (queue || []).length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                                 <CheckCircle2 className="w-8 h-8 mb-2" />
                                 <p>No patients in queue</p>

@@ -69,14 +69,29 @@ export default function ModulesSettingsPage() {
         try {
             const response = await api.get<ModulesResponse>('/settings/modules');
             if (response.success) {
-                setModules(response.data.modules);
-                const enabled = new Set(response.data.enabledModules);
+                // Defensive check: Ensure modules is an array
+                let modulesList = response.data.modules;
+
+                // Fallback: If backend returns enabledModules but not the full modules list, construct it
+                if (!Array.isArray(modulesList) && response.data.availableModules) {
+                    const enabledSet = new Set(response.data.enabledModules || []);
+                    modulesList = response.data.availableModules.map(m => ({
+                        ...m,
+                        isEnabled: m.alwaysEnabled || enabledSet.has(m.code)
+                    }));
+                }
+
+                setModules(Array.isArray(modulesList) ? modulesList : []);
+
+                const enabled = new Set(response.data.enabledModules || []);
                 setEnabledModules(enabled);
                 setOriginalEnabled(new Set(enabled));
             }
         } catch (err) {
             console.error('Failed to fetch modules:', err);
             setError('Failed to load module settings');
+            // Set empty array to prevent map errors
+            setModules([]);
         } finally {
             setLoading(false);
         }
@@ -201,7 +216,7 @@ export default function ModulesSettingsPage() {
 
             {/* Modules Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {modules.map((module) => {
+                {(modules || []).map((module) => {
                     const IconComponent = iconMap[module.icon] || Boxes;
                     const isEnabled = enabledModules.has(module.code) || module.alwaysEnabled;
 

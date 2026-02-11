@@ -85,7 +85,7 @@ export default function IpdDashboardPage() {
             if (dashboardRes.success) {
                 const data = dashboardRes.data as any;
                 // Map backend wardStats to frontend wardOccupancy if needed
-                if (data.wardStats && !data.wardOccupancy) {
+                if (Array.isArray(data.wardStats) && !data.wardOccupancy) {
                     data.wardOccupancy = data.wardStats.map((ward: any) => ({
                         id: ward.id,
                         name: ward.name,

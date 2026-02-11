@@ -83,7 +83,7 @@ export default function OpdDashboardPage() {
             if (response.success) {
                 setDashboard(response.data);
                 // Auto-select first doctor with waiting patients
-                const firstDoctor = response.data.doctorQueues.find((d) => d.waitingCount > 0);
+                const firstDoctor = (response.data.doctorQueues || []).find((d) => d.waitingCount > 0);
                 if (firstDoctor && !selectedDoctor) {
                     setSelectedDoctor(firstDoctor.doctorId);
                 }
@@ -204,7 +204,7 @@ export default function OpdDashboardPage() {
                             <Users className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.appointments.total || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.appointments?.total || 0}</p>
                             <p className="text-sm text-muted-foreground">Today's Appointments</p>
                         </div>
                     </div>
@@ -216,7 +216,7 @@ export default function OpdDashboardPage() {
                             <Clock className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.queue.byStatus?.WAITING || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.queue?.byStatus?.WAITING || 0}</p>
                             <p className="text-sm text-muted-foreground">Waiting</p>
                         </div>
                     </div>
@@ -228,7 +228,7 @@ export default function OpdDashboardPage() {
                             <UserCheck className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.queue.byStatus?.IN_CONSULTATION || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.queue?.byStatus?.IN_CONSULTATION || 0}</p>
                             <p className="text-sm text-muted-foreground">In Consultation</p>
                         </div>
                     </div>
@@ -240,7 +240,7 @@ export default function OpdDashboardPage() {
                             <CheckCircle2 className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.queue.byStatus?.COMPLETED || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.queue?.byStatus?.COMPLETED || 0}</p>
                             <p className="text-sm text-muted-foreground">Completed</p>
                         </div>
                     </div>

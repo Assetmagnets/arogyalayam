@@ -183,7 +183,7 @@ export default function IpdDashboardPage() {
                             <BedDouble className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.beds.total || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.beds?.total || 0}</p>
                             <p className="text-sm text-muted-foreground">Total Beds</p>
                         </div>
                     </div>
@@ -195,7 +195,7 @@ export default function IpdDashboardPage() {
                             <BedDouble className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.beds.byStatus?.AVAILABLE || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.beds?.byStatus?.AVAILABLE || 0}</p>
                             <p className="text-sm text-muted-foreground">Available</p>
                         </div>
                     </div>
@@ -207,7 +207,7 @@ export default function IpdDashboardPage() {
                             <Users className="w-5 h-5 text-red-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.admissions.currentlyAdmitted || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.admissions?.currentlyAdmitted || 0}</p>
                             <p className="text-sm text-muted-foreground">Admitted</p>
                         </div>
                     </div>
@@ -219,7 +219,7 @@ export default function IpdDashboardPage() {
                             <UserPlus className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.admissions.todayAdmissions || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.admissions?.todayAdmissions || 0}</p>
                             <p className="text-sm text-muted-foreground">Today's Admissions</p>
                         </div>
                     </div>
@@ -231,7 +231,7 @@ export default function IpdDashboardPage() {
                             <UserMinus className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{dashboard?.admissions.todayDischarges || 0}</p>
+                            <p className="text-2xl font-bold">{dashboard?.admissions?.todayDischarges || 0}</p>
                             <p className="text-sm text-muted-foreground">Today's Discharges</p>
                         </div>
                     </div>
@@ -270,7 +270,7 @@ export default function IpdDashboardPage() {
                                 </div>
                             </div>
                         ))}
-                        {(!dashboard?.wardOccupancy || dashboard.wardOccupancy.length === 0) && (
+                        {(!dashboard?.wardOccupancy || (dashboard.wardOccupancy || []).length === 0) && (
                             <div className="flex flex-col items-center py-8 text-muted-foreground">
                                 <AlertCircle className="w-8 h-8 mb-2" />
                                 <p>No wards configured</p>
@@ -326,7 +326,7 @@ export default function IpdDashboardPage() {
                                 </div>
                             </button>
                         ))}
-                        {admissions.length === 0 && (
+                        {(admissions || []).length === 0 && (
                             <div className="flex flex-col items-center py-8 text-muted-foreground">
                                 <BedDouble className="w-8 h-8 mb-2" />
                                 <p>No active admissions</p>

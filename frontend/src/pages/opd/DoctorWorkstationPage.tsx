@@ -149,7 +149,7 @@ export default function DoctorWorkstationPage() {
         }
     };
 
-    const waitingQueue = queue.filter((q) => q.status === 'WAITING');
+    const waitingQueue = (queue || []).filter((q) => q.status === 'WAITING');
 
     if (loading) {
         return (
@@ -354,7 +354,7 @@ export default function DoctorWorkstationPage() {
                             </div>
                         ) : (
                             <div className="divide-y divide-border max-h-96 overflow-y-auto">
-                                {waitingQueue.map((item) => (
+                                {(waitingQueue || []).map((item) => (
                                     <div key={item.id} className="p-3 hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">

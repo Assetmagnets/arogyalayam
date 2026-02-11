@@ -778,17 +778,13 @@ async function handleGetModules(req: VercelRequest, res: VercelResponse) {
         try {
             const hospital = await prisma.hospital.findUnique({
                 where: { id: user.hospitalId },
-                select: { id: true },
+                select: { enabledModules: true },
             });
-            if (hospital) {
-                // If hospital has enabledModules field, use it
-                const raw: any = hospital;
-                if (raw.enabledModules && Array.isArray(raw.enabledModules)) {
-                    enabledModules = raw.enabledModules;
-                }
+            if (hospital && hospital.enabledModules && Array.isArray(hospital.enabledModules)) {
+                enabledModules = hospital.enabledModules;
             }
         } catch {
-            // Field doesn't exist in schema yet, use defaults
+            // Fallback to defaults
         }
 
         return res.status(200).json({
@@ -1231,87 +1227,343 @@ async function handleOpdSkip(req: VercelRequest, res: VercelResponse, queueId: s
 }
 
 // ============================================================================
-// ROUTE HANDLERS - IPD (No schema models yet, return empty/defaults)
+// ROUTE HANDLERS - IPD (Real database queries)
 // ============================================================================
 
 async function handleIpdDashboard(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(200).json({
-        success: true,
-        data: {
-            totalBeds: 0,
-            occupiedBeds: 0,
-            availableBeds: 0,
-            todayAdmissions: 0,
-            todayDischarges: 0,
-            occupancyRate: 0,
-            wardStats: [],
-        },
-    });
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Get total beds
+        const totalBeds = await prisma.bed.count({
+            where: { ward: { hospitalId: user.hospitalId }, isActive: true, deletedAt: null },
+        });
+
+        // Get occupied beds
+        const occupiedBeds = await prisma.bed.count({
+            where: { ward: { hospitalId: user.hospitalId }, status: 'OCCUPIED', isActive: true, deletedAt: null },
+        });
+
+        // Today's admissions
+        const todayAdmissions = await prisma.admission.count({
+            where: {
+                hospitalId: user.hospitalId,
+                admissionDate: { gte: today, lt: tomorrow },
+                deletedAt: null,
+            },
+        });
+
+        // Today's discharges
+        const todayDischarges = await prisma.admission.count({
+            where: {
+                hospitalId: user.hospitalId,
+                dischargeDate: { gte: today, lt: tomorrow },
+                deletedAt: null,
+            },
+        });
+
+        // Ward stats
+        const wards = await prisma.ward.findMany({
+            where: { hospitalId: user.hospitalId, isActive: true, deletedAt: null },
+            include: {
+                beds: {
+                    where: { isActive: true, deletedAt: null },
+                    select: { id: true, status: true },
+                },
+            },
+            orderBy: { displayOrder: 'asc' },
+        });
+
+        const wardStats = wards.map(ward => ({
+            id: ward.id,
+            name: ward.name,
+            code: ward.code,
+            type: ward.type,
+            totalBeds: ward.beds.length,
+            occupiedBeds: ward.beds.filter(b => b.status === 'OCCUPIED').length,
+            availableBeds: ward.beds.filter(b => b.status === 'AVAILABLE').length,
+            maintenanceBeds: ward.beds.filter(b => b.status === 'MAINTENANCE').length,
+        }));
+
+        const availableBeds = totalBeds - occupiedBeds;
+        const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalBeds,
+                occupiedBeds,
+                availableBeds,
+                todayAdmissions,
+                todayDischarges,
+                occupancyRate,
+                wardStats,
+            },
+        });
+    } catch (error: any) {
+        console.error('IPD Dashboard error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
 async function handleIpdAdmissions(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(200).json({
-        success: true,
-        data: [],
-        meta: { total: 0 },
-    });
+    try {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const status = url.searchParams.get('status');
+        const page = parseInt(url.searchParams.get('page') || '1');
+        const limit = parseInt(url.searchParams.get('limit') || '20');
+        const skip = (page - 1) * limit;
+
+        const where: any = { hospitalId: user.hospitalId, deletedAt: null };
+        if (status) where.status = status;
+
+        const [admissions, total] = await Promise.all([
+            prisma.admission.findMany({
+                where,
+                include: {
+                    patient: { select: { id: true, firstName: true, lastName: true, uhid: true, mobilePrimary: true, gender: true, dateOfBirth: true } },
+                    admittingDoctor: { include: { user: { select: { firstName: true, lastName: true } } } },
+                    attendingDoctor: { include: { user: { select: { firstName: true, lastName: true } } } },
+                    bed: { include: { ward: { select: { name: true, code: true, type: true } } } },
+                },
+                orderBy: { admissionDate: 'desc' },
+                skip,
+                take: limit,
+            }),
+            prisma.admission.count({ where }),
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: admissions,
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error: any) {
+        console.error('IPD Admissions error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
 async function handleIpdWards(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(200).json({
-        success: true,
-        data: [],
-    });
+    try {
+        const wards = await prisma.ward.findMany({
+            where: { hospitalId: user.hospitalId, isActive: true, deletedAt: null },
+            include: {
+                beds: {
+                    where: { isActive: true, deletedAt: null },
+                    select: { id: true, bedNumber: true, bedType: true, status: true, dailyRate: true },
+                },
+            },
+            orderBy: { displayOrder: 'asc' },
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: wards,
+        });
+    } catch (error: any) {
+        console.error('IPD Wards error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
 async function handleIpdBeds(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(200).json({
-        success: true,
-        data: [],
-    });
+    try {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const wardId = url.searchParams.get('wardId');
+        const status = url.searchParams.get('status');
+
+        const where: any = {
+            ward: { hospitalId: user.hospitalId },
+            isActive: true,
+            deletedAt: null,
+        };
+        if (wardId) where.wardId = wardId;
+        if (status) where.status = status;
+
+        const beds = await prisma.bed.findMany({
+            where,
+            include: {
+                ward: { select: { id: true, name: true, code: true, type: true } },
+                admissions: {
+                    where: { status: 'ADMITTED', deletedAt: null },
+                    include: {
+                        patient: { select: { id: true, firstName: true, lastName: true, uhid: true } },
+                    },
+                    take: 1,
+                },
+            },
+            orderBy: { bedNumber: 'asc' },
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: beds,
+        });
+    } catch (error: any) {
+        console.error('IPD Beds error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
 async function handleIpdAdmit(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(501).json({
-        success: false,
-        error: { code: 'NOT_IMPLEMENTED', message: 'IPD admission not yet available. Ward and Bed models need to be added to the database.' }
-    });
+    try {
+        const body = req.body;
+
+        // Generate admission number
+        const now = new Date();
+        const yearMonth = `${String(now.getFullYear()).slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        const sequence = await prisma.admissionSequence.upsert({
+            where: { hospitalId_yearMonth: { hospitalId: user.hospitalId, yearMonth } },
+            create: { hospitalId: user.hospitalId, yearMonth, lastSeq: 1 },
+            update: { lastSeq: { increment: 1 } },
+        });
+
+        const admissionNo = `ADM-${yearMonth}-${String(sequence.lastSeq).padStart(4, '0')}`;
+
+        // Create admission and update bed status in transaction
+        const admission = await prisma.$transaction(async (tx) => {
+            // Mark bed as occupied
+            await tx.bed.update({
+                where: { id: body.bedId },
+                data: { status: 'OCCUPIED', updatedBy: user.userId },
+            });
+
+            // Create admission record
+            return tx.admission.create({
+                data: {
+                    hospitalId: user.hospitalId,
+                    admissionNo,
+                    patientId: body.patientId,
+                    admittingDoctorId: body.admittingDoctorId || body.doctorId,
+                    attendingDoctorId: body.attendingDoctorId,
+                    bedId: body.bedId,
+                    admissionDate: body.admissionDate ? new Date(body.admissionDate) : new Date(),
+                    admissionType: body.admissionType || 'ELECTIVE',
+                    admissionReason: body.admissionReason || body.reason || 'Admission',
+                    chiefComplaint: body.chiefComplaint,
+                    provisionalDiagnosis: body.provisionalDiagnosis || body.diagnosis,
+                    expectedStayDays: body.expectedStayDays ? parseInt(body.expectedStayDays) : null,
+                    expectedDischarge: body.expectedDischarge ? new Date(body.expectedDischarge) : null,
+                    isInsured: body.isInsured || false,
+                    insuranceApprovalNo: body.insuranceApprovalNo,
+                    createdBy: user.userId,
+                    updatedBy: user.userId,
+                },
+                include: {
+                    patient: { select: { firstName: true, lastName: true, uhid: true } },
+                    bed: { include: { ward: { select: { name: true } } } },
+                    admittingDoctor: { include: { user: { select: { firstName: true, lastName: true } } } },
+                },
+            });
+        });
+
+        return res.status(201).json({ success: true, data: admission });
+    } catch (error: any) {
+        console.error('IPD Admit error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
 async function handleIpdNursingNote(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(501).json({
-        success: false,
-        error: { code: 'NOT_IMPLEMENTED', message: 'IPD nursing notes not yet available.' }
-    });
+    try {
+        const body = req.body;
+
+        const nursingNote = await prisma.nursingNote.create({
+            data: {
+                admissionId: body.admissionId,
+                noteType: body.noteType || 'ROUTINE',
+                shift: body.shift,
+                content: body.content || body.notes || '',
+                temperature: body.temperature ? parseFloat(body.temperature) : null,
+                bpSystolic: body.bpSystolic ? parseInt(body.bpSystolic) : null,
+                bpDiastolic: body.bpDiastolic ? parseInt(body.bpDiastolic) : null,
+                pulseRate: body.pulseRate ? parseInt(body.pulseRate) : null,
+                respiratoryRate: body.respiratoryRate ? parseInt(body.respiratoryRate) : null,
+                spO2: body.spO2 ? parseInt(body.spO2) : null,
+                recordedBy: user.userId,
+                recordedByName: body.recordedByName,
+            },
+        });
+
+        return res.status(201).json({ success: true, data: nursingNote });
+    } catch (error: any) {
+        console.error('IPD Nursing Note error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
 
-async function handleIpdDischarge(req: VercelRequest, res: VercelResponse, _admissionId: string) {
+async function handleIpdDischarge(req: VercelRequest, res: VercelResponse, admissionId: string) {
     const user = requireAuth(req, res);
     if (!user) return;
 
-    return res.status(501).json({
-        success: false,
-        error: { code: 'NOT_IMPLEMENTED', message: 'IPD discharge not yet available.' }
-    });
+    try {
+        const body = req.body;
+
+        // Discharge admission and free bed in transaction
+        const admission = await prisma.$transaction(async (tx) => {
+            // Get admission to find bed
+            const existing = await tx.admission.findUnique({
+                where: { id: admissionId },
+                select: { bedId: true },
+            });
+
+            if (!existing) throw new Error('Admission not found');
+
+            // Free the bed
+            await tx.bed.update({
+                where: { id: existing.bedId },
+                data: { status: 'AVAILABLE', updatedBy: user.userId },
+            });
+
+            // Update admission
+            return tx.admission.update({
+                where: { id: admissionId },
+                data: {
+                    status: 'DISCHARGED',
+                    dischargeDate: body.dischargeDate ? new Date(body.dischargeDate) : new Date(),
+                    dischargeType: body.dischargeType || 'Normal',
+                    dischargeSummary: body.dischargeSummary || body.summary,
+                    dischargeAdvice: body.dischargeAdvice || body.advice,
+                    followUpDate: body.followUpDate ? new Date(body.followUpDate) : null,
+                    updatedBy: user.userId,
+                },
+                include: {
+                    patient: { select: { firstName: true, lastName: true, uhid: true } },
+                    bed: { include: { ward: { select: { name: true } } } },
+                },
+            });
+        });
+
+        return res.status(200).json({ success: true, data: admission });
+    } catch (error: any) {
+        console.error('IPD Discharge error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
 }
+
 
 // ============================================================================
 // MAIN HANDLER

@@ -78,6 +78,22 @@ class ApiClient {
         }
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Token is invalid or expired — clear auth and redirect to login
+                localStorage.removeItem('hms_access_token');
+                localStorage.removeItem('hms_refresh_token');
+                localStorage.removeItem('hms_user');
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                const error = new Error('Session expired. Please login again.') as Error & {
+                    code?: string;
+                    status?: number;
+                };
+                error.code = 'UNAUTHORIZED';
+                error.status = 401;
+                throw error;
+            }
             if (response.status === 429) {
                 const error = new Error('Too many requests. Please wait a moment and try again.') as Error & {
                     code?: string;

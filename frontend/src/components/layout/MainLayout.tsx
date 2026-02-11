@@ -60,8 +60,11 @@ export default function MainLayout() {
                 if (response.success) {
                     setEnabledModules(response.data.enabledModules);
                 }
-            } catch (error) {
-                console.error('Failed to fetch enabled modules:', error);
+            } catch (error: any) {
+                // Don't log auth errors — the global 401 handler will redirect
+                if (error?.status !== 401) {
+                    console.error('Failed to fetch enabled modules:', error);
+                }
                 // Default to showing all modules if API fails
                 setEnabledModules(allNavigation.map((n) => n.code));
             } finally {

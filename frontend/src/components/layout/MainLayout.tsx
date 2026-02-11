@@ -24,6 +24,7 @@ import {
     UserCog,
     Stethoscope,
     BedDouble,
+    BarChart3,
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 
@@ -37,7 +38,10 @@ const allNavigation = [
     { name: 'EMR', href: '/emr', icon: FileText, code: 'emr' },
     { name: 'Pharmacy', href: '/pharmacy', icon: Pill, code: 'pharmacy' },
     { name: 'Laboratory', href: '/lab', icon: TestTube2, code: 'lab' },
+    { name: 'Pharmacy', href: '/pharmacy', icon: Pill, code: 'pharmacy' },
+    { name: 'Laboratory', href: '/lab', icon: TestTube2, code: 'lab' },
     { name: 'Billing', href: '/billing', icon: Receipt, code: 'billing' },
+    { name: 'Reports', href: '/reports', icon: BarChart3, code: 'reports' },
     { name: 'Users', href: '/users', icon: UserCog, code: 'users' },
 ];
 

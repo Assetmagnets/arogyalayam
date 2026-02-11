@@ -185,6 +185,7 @@ const AVAILABLE_MODULES = [
     { code: 'pharmacy', name: 'Pharmacy', description: 'Pharmacy & dispensing', icon: 'Pill' },
     { code: 'lab', name: 'Laboratory', description: 'Lab tests & results', icon: 'TestTube2' },
     { code: 'billing', name: 'Billing', description: 'Invoicing & payments', icon: 'Receipt' },
+    { code: 'reports', name: 'Reports', description: 'Reports & analytics', icon: 'BarChart3' },
     { code: 'users', name: 'Users', description: 'User management', icon: 'UserCog' },
 ];
 

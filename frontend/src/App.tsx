@@ -25,6 +25,7 @@ import EMRPage from './pages/emr/EMRPage';
 import PharmacyPage from './pages/pharmacy/PharmacyPage';
 import LaboratoryPage from './pages/lab/LaboratoryPage';
 import BillingPage from './pages/billing/BillingPage';
+import ReportsPage from './pages/reports/ReportsPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import HospitalSettingsPage from './pages/settings/HospitalSettingsPage';
 import DepartmentManagementPage from './pages/settings/DepartmentManagementPage';
@@ -102,6 +103,9 @@ function App() {
 
                     {/* Billing */}
                     <Route path="/billing" element={<BillingPage />} />
+
+                    {/* Reports */}
+                    <Route path="/reports" element={<ReportsPage />} />
 
                     {/* Settings */}
                     <Route path="/settings" element={<SettingsPage />} />

@@ -22,6 +22,7 @@ import {
     ToggleLeft,
     ToggleRight,
     Lock,
+    BarChart3,
 } from 'lucide-react';
 
 interface Module {
@@ -48,6 +49,7 @@ const iconMap: Record<string, React.ElementType> = {
     TestTube2,
     Receipt,
     UserCog,
+    BarChart3,
 };
 
 export default function ModulesSettingsPage() {

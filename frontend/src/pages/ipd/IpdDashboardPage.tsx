@@ -83,10 +83,22 @@ export default function IpdDashboardPage() {
             ]);
 
             if (dashboardRes.success) {
-                setDashboard(dashboardRes.data);
+                const data = dashboardRes.data as any;
+                // Map backend wardStats to frontend wardOccupancy if needed
+                if (data.wardStats && !data.wardOccupancy) {
+                    data.wardOccupancy = data.wardStats.map((ward: any) => ({
+                        id: ward.id,
+                        name: ward.name,
+                        type: ward.type,
+                        totalBeds: ward.totalBeds,
+                        occupiedBeds: ward.occupiedBeds,
+                        occupancyRate: ward.totalBeds > 0 ? Math.round((ward.occupiedBeds / ward.totalBeds) * 100) : 0
+                    }));
+                }
+                setDashboard(data);
             }
             if (admissionsRes.success) {
-                setAdmissions(admissionsRes.data);
+                setAdmissions(admissionsRes.data || []);
             }
         } catch (error) {
             console.error('Failed to fetch IPD data:', error);

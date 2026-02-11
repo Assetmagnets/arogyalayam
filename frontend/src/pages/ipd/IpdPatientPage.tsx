@@ -199,9 +199,9 @@ export default function IpdPatientPage() {
 
     const tabs = [
         { key: 'overview', label: 'Overview', icon: User },
-        { key: 'nursing', label: 'Nursing Notes', icon: ClipboardList, count: admission.nursingNotes.length },
-        { key: 'rounds', label: 'Doctor Rounds', icon: Stethoscope, count: admission.doctorRounds.length },
-        { key: 'transfers', label: 'Transfers', icon: ArrowRightLeft, count: admission.bedTransfers.length },
+        { key: 'nursing', label: 'Nursing Notes', icon: ClipboardList, count: (admission.nursingNotes || []).length },
+        { key: 'rounds', label: 'Doctor Rounds', icon: Stethoscope, count: (admission.doctorRounds || []).length },
+        { key: 'transfers', label: 'Transfers', icon: ArrowRightLeft, count: (admission.bedTransfers || []).length },
     ] as const;
 
     return (
@@ -260,8 +260,8 @@ export default function IpdPatientPage() {
                     <div>
                         <p className="text-xs text-muted-foreground">Status</p>
                         <span className={`inline-flex px-2 py-0.5 text-sm rounded-full ${admission.status === 'ADMITTED' ? 'bg-green-100 text-green-800' :
-                                admission.status === 'DISCHARGED' ? 'bg-gray-100 text-gray-800' :
-                                    'bg-yellow-100 text-yellow-800'
+                            admission.status === 'DISCHARGED' ? 'bg-gray-100 text-gray-800' :
+                                'bg-yellow-100 text-yellow-800'
                             }`}>
                             {admission.status}
                         </span>
@@ -277,8 +277,8 @@ export default function IpdPatientPage() {
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -482,11 +482,11 @@ export default function IpdPatientPage() {
                                 </div>
                             )}
 
-                            {admission.nursingNotes.length === 0 ? (
+                            {(admission.nursingNotes || []).length === 0 ? (
                                 <p className="text-center text-muted-foreground py-8">No nursing notes recorded</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {admission.nursingNotes.map((note) => (
+                                    {(admission.nursingNotes || []).map((note) => (
                                         <div key={note.id} className="border border-border rounded-lg p-3">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
@@ -518,10 +518,10 @@ export default function IpdPatientPage() {
                     {/* Doctor Rounds Tab */}
                     {activeTab === 'rounds' && (
                         <div className="space-y-3">
-                            {admission.doctorRounds.length === 0 ? (
+                            {(admission.doctorRounds || []).length === 0 ? (
                                 <p className="text-center text-muted-foreground py-8">No doctor rounds recorded</p>
                             ) : (
-                                admission.doctorRounds.map((round) => (
+                                (admission.doctorRounds || []).map((round) => (
                                     <div key={round.id} className="border border-border rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
@@ -537,8 +537,8 @@ export default function IpdPatientPage() {
                                         </div>
                                         {round.reviewStatus && (
                                             <span className={`inline-flex px-2 py-0.5 text-xs rounded-full mb-2 ${round.reviewStatus === 'Critical' ? 'bg-red-100 text-red-800' :
-                                                    round.reviewStatus === 'Improving' ? 'bg-green-100 text-green-800' :
-                                                        'bg-blue-100 text-blue-800'
+                                                round.reviewStatus === 'Improving' ? 'bg-green-100 text-green-800' :
+                                                    'bg-blue-100 text-blue-800'
                                                 }`}>
                                                 {round.reviewStatus}
                                             </span>
@@ -576,10 +576,10 @@ export default function IpdPatientPage() {
                     {/* Transfers Tab */}
                     {activeTab === 'transfers' && (
                         <div className="space-y-3">
-                            {admission.bedTransfers.length === 0 ? (
+                            {(admission.bedTransfers || []).length === 0 ? (
                                 <p className="text-center text-muted-foreground py-8">No bed transfers recorded</p>
                             ) : (
-                                admission.bedTransfers.map((transfer) => (
+                                (admission.bedTransfers || []).map((transfer) => (
                                     <div key={transfer.id} className="flex items-center gap-4 border border-border rounded-lg p-3">
                                         <div className="text-sm">
                                             <span className="font-medium">{transfer.fromBed.ward.name} - {transfer.fromBed.bedNumber}</span>

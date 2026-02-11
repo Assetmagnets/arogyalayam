@@ -1230,6 +1230,156 @@ async function handleOpdSkip(req: VercelRequest, res: VercelResponse, queueId: s
 // ROUTE HANDLERS - IPD (Real database queries)
 // ============================================================================
 
+// Get single admission details
+async function handleGetAdmission(req: VercelRequest, res: VercelResponse, id: string) {
+    const user = requireAuth(req, res);
+    if (!user) return;
+
+    try {
+        const admission = await prisma.admission.findFirst({
+            where: { id, hospitalId: user.hospitalId },
+            include: {
+                patient: {
+                    select: {
+                        id: true,
+                        uhid: true,
+                        firstName: true,
+                        lastName: true,
+                        gender: true,
+                        dateOfBirth: true,
+                        mobilePrimary: true,
+                        bloodGroup: true,
+                    }
+                },
+                admittingDoctor: {
+                    include: {
+                        user: { select: { firstName: true, lastName: true } },
+                        department: { select: { name: true } }
+                    }
+                },
+                attendingDoctor: {
+                    include: {
+                        user: { select: { firstName: true, lastName: true } }
+                    }
+                },
+                bed: {
+                    include: {
+                        ward: { select: { id: true, name: true, type: true } }
+                    }
+                },
+                nursingNotes: {
+                    orderBy: { recordedAt: 'desc' },
+                    include: { createdBy: { select: { firstName: true, lastName: true } } } // If needed
+                },
+                doctorRounds: {
+                    orderBy: { roundDate: 'desc' },
+                    include: {
+                        doctor: {
+                            include: { user: { select: { firstName: true, lastName: true } } }
+                        }
+                    }
+                },
+                bedTransfers: {
+                    orderBy: { transferDate: 'desc' },
+                    include: {
+                        fromBed: { include: { ward: { select: { name: true } } } },
+                        toBed: { include: { ward: { select: { name: true } } } }
+                    }
+                }
+            }
+        });
+
+        if (!admission) {
+            return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Admission not found' } });
+        }
+
+        // Map nursing notes to include recordedByName if available or just use createdBy
+        const mappedAdmission = {
+            ...admission,
+            nursingNotes: admission.nursingNotes.map(n => ({
+                ...n,
+                recordedByName: n.recordedByName || 'Nurse'
+            }))
+        };
+
+        return res.status(200).json({ success: true, data: mappedAdmission });
+    } catch (error: any) {
+        console.error('Get Admission error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
+}
+
+// Get OPD Queue
+async function handleOpdQueue(req: VercelRequest, res: VercelResponse, doctorId: string) {
+    const user = requireAuth(req, res);
+    if (!user) return;
+
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const queue = await prisma.opdQueue.findMany({
+            where: {
+                hospitalId: user.hospitalId,
+                doctorId,
+                queueDate: { gte: today, lt: tomorrow },
+                status: { not: 'COMPLETED' },
+                deletedAt: null
+            },
+            include: {
+                patient: {
+                    select: {
+                        id: true,
+                        uhid: true,
+                        firstName: true,
+                        lastName: true,
+                        gender: true,
+                        mobilePrimary: true,
+                        dateOfBirth: true
+                    }
+                },
+                appointment: {
+                    select: {
+                        consultationType: true,
+                        chiefComplaint: true
+                    }
+                }
+            },
+            orderBy: { position: 'asc' }
+        });
+
+        // Calculate age and format for frontend
+        const formattedQueue = queue.map(item => {
+            let age = 0;
+            if (item.patient.dateOfBirth) {
+                const dob = new Date(item.patient.dateOfBirth);
+                const diffMs = Date.now() - dob.getTime();
+                const ageDt = new Date(diffMs);
+                age = Math.abs(ageDt.getUTCFullYear() - 1970);
+            }
+
+            return {
+                id: item.id,
+                tokenNumber: item.tokenNumber,
+                status: item.status,
+                position: item.tokenNumber, // Simplified
+                checkInTime: item.checkInTime,
+                estimatedWait: 15, // Mock
+                patient: item.patient,
+                appointment: item.appointment || { consultationType: 'General', chiefComplaint: '' },
+                patientAge: age
+            };
+        });
+
+        return res.status(200).json({ success: true, data: { queue: formattedQueue } });
+    } catch (error: any) {
+        console.error('Get OPD Queue error:', error);
+        return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+    }
+}
+
 async function handleIpdDashboard(req: VercelRequest, res: VercelResponse) {
     const user = requireAuth(req, res);
     if (!user) return;
@@ -1719,10 +1869,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return handleIpdNursingNote(req, res);
         }
 
+        params = matchPath(normalizedPath, '/api/v1/ipd/admissions/:id');
+        if (params && method === 'GET') {
+            return handleGetAdmission(req, res, params.id);
+        }
+
         params = matchPath(normalizedPath, '/api/v1/ipd/discharge/:id');
         if (params && method === 'POST') {
             return handleIpdDischarge(req, res, params.id);
         }
+
+        params = matchPath(normalizedPath, '/api/v1/opd/queue/:doctorId');
+        if (params && method === 'GET') {
+            return handleOpdQueue(req, res, params.doctorId);
+        }
+
 
         // 404 for unmatched API routes
         return res.status(404).json({

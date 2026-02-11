@@ -254,13 +254,13 @@ export default function OpdDashboardPage() {
                     <div className="bg-card rounded-xl border border-border p-4">
                         <h2 className="font-semibold text-foreground mb-4">Doctor Queues</h2>
                         <div className="space-y-2">
-                            {dashboard?.doctorQueues.map((doctor) => (
+                            {(dashboard?.doctorQueues || []).map((doctor) => (
                                 <button
                                     key={doctor.doctorId}
                                     onClick={() => setSelectedDoctor(doctor.doctorId)}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${selectedDoctor === doctor.doctorId
-                                            ? 'bg-primary/10 border-2 border-primary'
-                                            : 'bg-muted hover:bg-muted/80'
+                                        ? 'bg-primary/10 border-2 border-primary'
+                                        : 'bg-muted hover:bg-muted/80'
                                         }`}
                                 >
                                     <p className="font-medium text-foreground">{doctor.doctorName}</p>
@@ -273,7 +273,7 @@ export default function OpdDashboardPage() {
                                     </div>
                                 </button>
                             ))}
-                            {dashboard?.doctorQueues.length === 0 && (
+                            {(dashboard?.doctorQueues || []).length === 0 && (
                                 <p className="text-muted-foreground text-sm text-center py-4">
                                     No active doctors today
                                 </p>
@@ -314,7 +314,7 @@ export default function OpdDashboardPage() {
                             </div>
                         ) : (
                             <div className="divide-y divide-border">
-                                {queue.map((item) => (
+                                {(queue || []).map((item) => (
                                     <div
                                         key={item.id}
                                         className={`p-4 ${item.status === 'IN_CONSULTATION' ? 'bg-blue-50' : ''

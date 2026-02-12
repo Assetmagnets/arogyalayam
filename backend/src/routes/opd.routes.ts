@@ -444,6 +444,7 @@ router.post(
         try {
             const { queueId } = req.params;
             const hospitalId = req.user!.hospitalId;
+            const { clinicalNotes, diagnosis, prescription, advice, vitals } = req.body;
 
             const queue = await prisma.opdQueue.findUnique({
                 where: { id: queueId },
@@ -465,30 +466,65 @@ router.post(
                 return;
             }
 
-            const now = new Date();
-
-            const [updatedQueue] = await prisma.$transaction([
-                prisma.opdQueue.update({
+            const [updatedQueue, medicalRecord] = await prisma.$transaction(async (tx) => {
+                const q = await tx.opdQueue.update({
                     where: { id: queueId },
                     data: {
                         status: 'COMPLETED',
-                        endTime: now,
+                        endTime: new Date(),
                     },
-                }),
-                prisma.appointment.update({
+                });
+
+                await tx.appointment.update({
                     where: { id: queue.appointmentId },
                     data: {
                         status: 'COMPLETED',
-                        consultationEndAt: now,
+                        consultationEndAt: new Date(),
                         updatedBy: req.user!.userId,
                     },
-                }),
-            ]);
+                });
+
+                // Create Medical Record
+                const mr = await tx.medicalRecord.create({
+                    data: {
+                        patientId: queue.patientId,
+                        doctorId: queue.doctorId,
+                        appointmentId: queue.appointmentId,
+                        consultationType: 'NEW', // Defaulting for now
+                        clinicalNotes: clinicalNotes,
+                        provisionalDiagnosis: diagnosis,
+                        treatmentPlan: prescription, // Mapping prescription text to treatment plan
+                        advice: advice,
+                        createdBy: req.user!.userId,
+                        updatedBy: req.user!.userId,
+                    }
+                });
+
+                // Create Vitals if provided
+                if (vitals && Object.keys(vitals).length > 0) {
+                    await tx.vital.create({
+                        data: {
+                            patientId: queue.patientId,
+                            medicalRecordId: mr.id,
+                            bpSystolic: vitals.bpSystolic,
+                            bpDiastolic: vitals.bpDiastolic,
+                            pulseRate: vitals.pulseRate,
+                            temperatureF: vitals.temperatureF,
+                            spO2: vitals.spO2,
+                            weightKg: vitals.weightKg,
+                            heightCm: vitals.heightCm,
+                            recordedBy: req.user!.userId,
+                        }
+                    });
+                }
+
+                return [q, mr];
+            });
 
             res.json({
                 success: true,
                 data: updatedQueue,
-                message: 'Consultation completed',
+                message: 'Consultation completed and medical record saved',
             });
         } catch (error) {
             next(error);

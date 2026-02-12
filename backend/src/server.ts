@@ -24,6 +24,8 @@ import userRoutes from './routes/users.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import opdRoutes from './routes/opd.routes.js';
 import ipdRoutes from './routes/ipd.routes.js';
+import ipdClinicalRoutes from './routes/ipd-clinical.routes.js';
+import emrRoutes from './routes/emr.routes.js';
 
 // ============================================================================
 // APP SETUP
@@ -132,6 +134,8 @@ app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/settings`, settingsRoutes);
 app.use(`${API_PREFIX}/opd`, opdRoutes);
 app.use(`${API_PREFIX}/ipd`, ipdRoutes);
+app.use(`${API_PREFIX}/ipd/clinical`, ipdClinicalRoutes);
+app.use(`${API_PREFIX}/emr`, emrRoutes);
 
 // ============================================================================
 // ERROR HANDLING

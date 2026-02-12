@@ -187,6 +187,13 @@ export default function OpdDashboardPage() {
                         Refresh
                     </button>
                     <button
+                        onClick={() => navigate('/opd/consultation')}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+                    >
+                        <Stethoscope className="w-4 h-4" />
+                        Consultation Desk
+                    </button>
+                    <button
                         onClick={() => navigate('/appointments')}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                     >

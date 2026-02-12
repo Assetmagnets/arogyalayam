@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api';
 import {
     BedDouble,
@@ -50,6 +50,10 @@ interface Bed {
 
 export default function AdmitPatientPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const queryPatientId = searchParams.get('patientId');
+    const queryAppointmentId = searchParams.get('appointmentId');
+
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -79,7 +83,10 @@ export default function AdmitPatientPage() {
     useEffect(() => {
         fetchDoctors();
         fetchWards();
-    }, []);
+        if (queryPatientId) {
+            fetchPatientDetails(queryPatientId);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (selectedWardId) {
@@ -89,6 +96,17 @@ export default function AdmitPatientPage() {
             setSelectedBedId('');
         }
     }, [selectedWardId]);
+
+    const fetchPatientDetails = async (id: string) => {
+        try {
+            const response = await api.get<PatientResult>(`/patients/${id}`);
+            if (response.success) {
+                setSelectedPatient(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch patient details:', error);
+        }
+    };
 
     const fetchDoctors = async () => {
         try {
@@ -159,7 +177,7 @@ export default function AdmitPatientPage() {
         setError('');
 
         try {
-            const response = await api.post('/ipd/admit', {
+            const payload: any = {
                 patientId: selectedPatient.id,
                 admittingDoctorId: selectedDoctorId,
                 bedId: selectedBedId,
@@ -168,10 +186,16 @@ export default function AdmitPatientPage() {
                 chiefComplaint: chiefComplaint || undefined,
                 provisionalDiagnosis: provisionalDiagnosis || undefined,
                 expectedStayDays: expectedStayDays ? parseInt(expectedStayDays) : undefined,
-            });
+            };
+
+            if (queryAppointmentId) {
+                payload.appointmentId = queryAppointmentId;
+            }
+
+            const response = await api.post<{ id: string }>('/ipd/admit', payload);
 
             if (response.success) {
-                navigate('/ipd');
+                navigate(`/ipd/patient/${response.data.id}`); // Redirect to patient details
             } else {
                 setError(response.error?.message || 'Failed to admit patient');
             }
@@ -228,6 +252,9 @@ export default function AdmitPatientPage() {
                                     setSelectedPatient(null);
                                     setPatientSearch('');
                                     setPatients([]);
+                                    // Also clear URL params if user manually changes patient? 
+                                    // Maybe just let them clear selection.
+                                    navigate('/ipd/admit', { replace: true });
                                 }}
                                 className="text-sm text-primary hover:underline"
                             >

@@ -14,8 +14,11 @@ import PatientRegistrationPage from './pages/patients/PatientRegistrationPage';
 import PatientDetailsPage from './pages/patients/PatientDetailsPage';
 import AppointmentsPage from './pages/appointments/AppointmentsPage';
 import QueueDisplayPage from './pages/appointments/QueueDisplayPage';
+// OPD
 import OpdDashboardPage from './pages/opd/OpdDashboardPage';
 import DoctorWorkstationPage from './pages/opd/DoctorWorkstationPage';
+import DoctorConsultationPage from './pages/opd/DoctorConsultationPage';
+
 import IpdDashboardPage from './pages/ipd/IpdDashboardPage';
 import AdmitPatientPage from './pages/ipd/AdmitPatientPage';
 import IpdPatientPage from './pages/ipd/IpdPatientPage';
@@ -33,42 +36,16 @@ import DepartmentManagementPage from './pages/settings/DepartmentManagementPage'
 import RolesPermissionsPage from './pages/settings/RolesPermissionsPage';
 import ModulesSettingsPage from './pages/settings/ModulesSettingsPage';
 
-// Protected Route Component
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuth();
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
-
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    return <>{children}</>;
-}
-
 function App() {
     return (
         <AuthProvider>
             <Routes>
-                {/* Auth Routes */}
-                <Route element={<AuthLayout />}>
-                    <Route path="/login" element={<LoginPage />} />
-                </Route>
+                {/* Public Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/queue-display" element={<QueueDisplayPage />} />
 
                 {/* Protected Routes */}
-                <Route
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout />
-                        </ProtectedRoute>
-                    }
-                >
+                <Route element={<MainLayout />}>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
 
@@ -83,6 +60,7 @@ function App() {
                     {/* OPD */}
                     <Route path="/opd" element={<OpdDashboardPage />} />
                     <Route path="/opd/workstation" element={<DoctorWorkstationPage />} />
+                    <Route path="/opd/consultation" element={<DoctorConsultationPage />} />
 
                     {/* IPD */}
                     <Route path="/ipd" element={<IpdDashboardPage />} />
@@ -90,16 +68,11 @@ function App() {
                     <Route path="/ipd/patient/:id" element={<IpdPatientPage />} />
                     <Route path="/ipd/discharge/:id" element={<DischargePage />} />
 
-                    {/* Users */}
-                    <Route path="/users" element={<UsersPage />} />
-
                     {/* EMR */}
                     <Route path="/emr" element={<EMRPage />} />
 
-                    {/* Pharmacy */}
+                    {/* Pharmacy & Lab */}
                     <Route path="/pharmacy" element={<PharmacyPage />} />
-
-                    {/* Laboratory */}
                     <Route path="/lab" element={<LaboratoryPage />} />
 
                     {/* Billing */}
@@ -109,6 +82,9 @@ function App() {
                     {/* Reports */}
                     <Route path="/reports" element={<ReportsPage />} />
 
+                    {/* Users */}
+                    <Route path="/users" element={<UsersPage />} />
+
                     {/* Settings */}
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/settings/hospital" element={<HospitalSettingsPage />} />
@@ -116,9 +92,6 @@ function App() {
                     <Route path="/settings/roles" element={<RolesPermissionsPage />} />
                     <Route path="/settings/modules" element={<ModulesSettingsPage />} />
                 </Route>
-
-                {/* Public Routes */}
-                <Route path="/queue-display" element={<QueueDisplayPage />} />
 
                 {/* Catch all */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

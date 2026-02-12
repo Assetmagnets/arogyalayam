@@ -1,6 +1,6 @@
 // ============================================================================
 // HMS Frontend - IPD Patient Page
-// View admitted patient details, nursing notes, doctor rounds
+// View admitted patient details, nursing notes, doctor rounds, clinical data
 // ============================================================================
 
 import { useState, useEffect } from 'react';
@@ -20,7 +20,13 @@ import {
     Thermometer,
     Activity,
     Loader2,
+    Pill,
+    FlaskConical,
+    Scissors
 } from 'lucide-react';
+import PrescriptionList from '../../components/ipd/PrescriptionList';
+import LabOrderList from '../../components/ipd/LabOrderList';
+import SurgeryList from '../../components/ipd/SurgeryList';
 
 interface AdmissionDetail {
     id: string;
@@ -107,7 +113,7 @@ export default function IpdPatientPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [admission, setAdmission] = useState<AdmissionDetail | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'nursing' | 'rounds' | 'transfers'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'nursing' | 'rounds' | 'medications' | 'lab' | 'surgeries' | 'transfers'>('overview');
 
     // Nursing note form
     const [showNursingForm, setShowNursingForm] = useState(false);
@@ -199,8 +205,11 @@ export default function IpdPatientPage() {
 
     const tabs = [
         { key: 'overview', label: 'Overview', icon: User },
-        { key: 'nursing', label: 'Nursing Notes', icon: ClipboardList, count: (admission.nursingNotes || []).length },
-        { key: 'rounds', label: 'Doctor Rounds', icon: Stethoscope, count: (admission.doctorRounds || []).length },
+        { key: 'nursing', label: 'Nursing', icon: ClipboardList, count: (admission.nursingNotes || []).length },
+        { key: 'rounds', label: 'Rounds', icon: Stethoscope, count: (admission.doctorRounds || []).length },
+        { key: 'medications', label: 'Meds', icon: Pill },
+        { key: 'lab', label: 'Lab', icon: FlaskConical },
+        { key: 'surgeries', label: 'Surgery', icon: Scissors },
         { key: 'transfers', label: 'Transfers', icon: ArrowRightLeft, count: (admission.bedTransfers || []).length },
     ] as const;
 
@@ -571,6 +580,21 @@ export default function IpdPatientPage() {
                                 ))
                             )}
                         </div>
+                    )}
+
+                    {/* Medications Tab */}
+                    {activeTab === 'medications' && id && admission && (
+                        <PrescriptionList admissionId={id} patientId={admission.patient.id} />
+                    )}
+
+                    {/* Lab Tab */}
+                    {activeTab === 'lab' && id && admission && (
+                        <LabOrderList admissionId={id} patientId={admission.patient.id} />
+                    )}
+
+                    {/* Surgery Tab */}
+                    {activeTab === 'surgeries' && id && admission && (
+                        <SurgeryList admissionId={id} patientId={admission.patient.id} hospitalId="" />
                     )}
 
                     {/* Transfers Tab */}

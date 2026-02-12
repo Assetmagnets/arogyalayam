@@ -306,6 +306,18 @@ router.get(
 );
 
 /**
+ * Generate invoice number
+ */
+async function generateInvoiceNumber(hospitalId: string): Promise<string> {
+    const count = await prisma.invoice.count({
+        where: { hospitalId },
+    });
+    const date = new Date();
+    const prefix = `INV-${date.getFullYear().toString().substr(-2)}${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+    return `${prefix}-${(count + 1).toString().padStart(4, '0')}`;
+}
+
+/**
  * POST /api/v1/appointments
  * Create a new appointment
  */
@@ -332,6 +344,7 @@ router.post(
             // Verify doctor exists and is active
             const doctor = await prisma.doctor.findFirst({
                 where: { id: doctorId, hospitalId, isActive: true, deletedAt: null },
+                include: { user: true },
             });
 
             if (!doctor) {
@@ -360,30 +373,62 @@ router.post(
                 new Date(appointmentDate)
             );
 
-            // Create appointment
-            const appointment = await prisma.appointment.create({
-                data: {
-                    hospitalId,
-                    patientId,
-                    doctorId,
-                    appointmentDate: new Date(appointmentDate),
-                    slotTime,
-                    consultationType: consultationType || 'NEW',
-                    status: 'SCHEDULED',
-                    tokenNumber,
-                    tokenPrefix: 'A',
-                    chiefComplaint,
-                    notes,
-                    bookedVia: bookedVia || 'COUNTER',
-                    createdBy: userId,
-                    updatedBy: userId,
-                },
-                include: {
-                    patient: { select: { uhid: true, firstName: true, lastName: true } },
-                    doctor: {
-                        include: { user: { select: { firstName: true, lastName: true } } },
+            // Generate Invoice Number
+            const invoiceNo = await generateInvoiceNumber(hospitalId);
+            const consultationFee = doctor.consultationFee || 0;
+
+            // Create appointment and invoice in transaction
+            const [appointment, invoice] = await prisma.$transaction([
+                prisma.appointment.create({
+                    data: {
+                        hospitalId,
+                        patientId,
+                        doctorId,
+                        appointmentDate: new Date(appointmentDate),
+                        slotTime,
+                        consultationType: consultationType || 'NEW',
+                        status: 'SCHEDULED',
+                        tokenNumber,
+                        tokenPrefix: 'A',
+                        chiefComplaint,
+                        notes,
+                        bookedVia: bookedVia || 'COUNTER',
+                        createdBy: userId,
+                        updatedBy: userId,
                     },
-                },
+                }),
+                prisma.invoice.create({
+                    data: {
+                        hospitalId,
+                        patientId,
+                        invoiceNo,
+                        invoiceDate: new Date(),
+                        subtotal: consultationFee,
+                        totalAmount: consultationFee,
+                        balanceAmount: consultationFee,
+                        status: 'PENDING',
+                        createdBy: userId,
+                        updatedBy: userId,
+                        items: {
+                            create: {
+                                description: `Consultation Fee - Dr. ${doctor.user?.firstName || ''} ${doctor.user?.lastName || ''}`,
+                                quantity: 1,
+                                unitPrice: consultationFee,
+                                totalAmount: consultationFee,
+                                category: 'Consultation',
+                            }
+                        }
+                    }
+                })
+            ]);
+
+            // Link Invoice to Appointment (Need separate update because of circular reference or just strict order, easier to update)
+            // Actually, we can link appointmentId in invoice creation if we use nested write or simply update invoice after.
+            // But strict transaction is better.
+            // Let's use update for linkage to be safe and clear.
+            await prisma.invoice.update({
+                where: { id: invoice.id },
+                data: { appointmentId: appointment.id }
             });
 
             res.status(201).json({
@@ -394,10 +439,10 @@ router.post(
                     appointmentDate: appointment.appointmentDate,
                     slotTime: appointment.slotTime,
                     patient: {
-                        uhid: appointment.patient.uhid,
-                        name: `${appointment.patient.firstName} ${appointment.patient.lastName}`,
+                        uhid: patient.uhid,
+                        name: `${patient.firstName} ${patient.lastName}`,
                     },
-                    doctor: `Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,
+                    invoiceId: invoice.id,
                     message: 'Appointment booked successfully',
                 },
             });

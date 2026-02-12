@@ -67,15 +67,15 @@ enum ConsultationType {
 }
 
 enum PrescriptionFrequency {
-  OD      // Once daily
-  BD      // Twice daily
-  TDS     // Three times daily
-  QID     // Four times daily
-  SOS     // As needed
-  STAT    // Immediately
-  HS      // At bedtime
-  AC      // Before meals
-  PC      // After meals
+  OD // Once daily
+  BD // Twice daily
+  TDS // Three times daily
+  QID // Four times daily
+  SOS // As needed
+  STAT // Immediately
+  HS // At bedtime
+  AC // Before meals
+  PC // After meals
 }
 
 enum DrugRoute {
@@ -138,7 +138,7 @@ enum AdmissionStatus {
   TRANSFERRED
   DISCHARGED
   EXPIRED
-  LAMA  // Left Against Medical Advice
+  LAMA // Left Against Medical Advice
 }
 
 enum BedStatus {
@@ -165,60 +165,61 @@ enum WardType {
 // ============================================================================
 
 model Hospital {
-  id                String    @id @default(cuid())
-  name              String
-  code              String    @unique // Short code for UHID prefix
-  registrationNo    String?   // Hospital registration number
-  licenseNo         String?   // Healthcare license
-  
+  id             String  @id @default(cuid())
+  name           String
+  code           String  @unique // Short code for UHID prefix
+  registrationNo String? // Hospital registration number
+  licenseNo      String? // Healthcare license
+
   // Contact
-  email             String?
-  phone             String?
-  website           String?
-  
+  email   String?
+  phone   String?
+  website String?
+
   // Address
-  addressLine1      String?
-  addressLine2      String?
-  city              String?
-  district          String?
-  state             String?
-  pinCode           String?
-  country           String    @default("India")
-  
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  district     String?
+  state        String?
+  pinCode      String?
+  country      String  @default("India")
+
   // Settings
-  timezone          String    @default("Asia/Kolkata")
-  currency          String    @default("INR")
-  gstNumber         String?   // GST registration
-  panNumber         String?   // PAN for tax
-  
+  timezone  String  @default("Asia/Kolkata")
+  currency  String  @default("INR")
+  gstNumber String? // GST registration
+  panNumber String? // PAN for tax
+
   // Branding
-  logoUrl           String?
-  primaryColor      String?
-  
+  logoUrl      String?
+  primaryColor String?
+
   // Module visibility (which sidebar modules are enabled)
-  enabledModules    String[]  @default(["dashboard", "patients", "appointments", "emr", "pharmacy", "lab", "billing", "users"])
-  
+  enabledModules String[] @default(["dashboard", "patients", "appointments", "emr", "pharmacy", "lab", "billing", "users"])
+
   // Audit
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  users             User[]
-  patients          Patient[]
-  doctors           Doctor[]
-  departments       Department[]
-  appointments      Appointment[]
-  opdQueues         OpdQueue[]
-  inventoryItems    InventoryItem[]
-  invoices          Invoice[]
-  services          ServiceMaster[]
-  insurancePlans    InsurancePlan[]
-  uhidSequences     UhidSequence[]
-  wards             Ward[]
-  admissions        Admission[]
+  users          User[]
+  patients       Patient[]
+  doctors        Doctor[]
+  departments    Department[]
+  appointments   Appointment[]
+  opdQueues      OpdQueue[]
+  inventoryItems InventoryItem[]
+  invoices       Invoice[]
+  services       ServiceMaster[]
+  insurancePlans InsurancePlan[]
+  uhidSequences  UhidSequence[]
+  wards          Ward[]
+  admissions     Admission[]
+  OTRoom         OTRoom[]
 
   @@index([code])
   @@index([deletedAt])
@@ -229,42 +230,42 @@ model Hospital {
 // ============================================================================
 
 model User {
-  id                String      @id @default(cuid())
-  hospitalId        String
-  hospital          Hospital    @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Auth
-  email             String      @unique
-  passwordHash      String
-  refreshTokenHash  String?     // For token rotation & reuse detection
-  tokenFamily       String?     // Token family for refresh token rotation
-  
+  email            String  @unique
+  passwordHash     String
+  refreshTokenHash String? // For token rotation & reuse detection
+  tokenFamily      String? // Token family for refresh token rotation
+
   // Profile
-  firstName         String
-  lastName          String
-  phone             String?
-  avatarUrl         String?
-  
+  firstName String
+  lastName  String
+  phone     String?
+  avatarUrl String?
+
   // Status
-  status            UserStatus  @default(PENDING_VERIFICATION)
-  emailVerifiedAt   DateTime?
-  lastLoginAt       DateTime?
-  failedLoginCount  Int         @default(0)
-  lockedUntil       DateTime?
-  
+  status           UserStatus @default(PENDING_VERIFICATION)
+  emailVerifiedAt  DateTime?
+  lastLoginAt      DateTime?
+  failedLoginCount Int        @default(0)
+  lockedUntil      DateTime?
+
   // RBAC
-  roleId            String
-  role              Role        @relation(fields: [roleId], references: [id])
-  
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
   // Audit
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  doctor            Doctor?
+  doctor Doctor?
 
   @@index([hospitalId])
   @@index([email])
@@ -273,52 +274,52 @@ model User {
 }
 
 model Role {
-  id            String       @id @default(cuid())
-  name          String       // e.g., "Super Admin", "Doctor", "Receptionist", "Pharmacist"
-  code          String       @unique // e.g., "SUPER_ADMIN", "DOCTOR"
-  description   String?
-  isSystemRole  Boolean      @default(false) // Cannot be deleted
-  
+  id           String  @id @default(cuid())
+  name         String // e.g., "Super Admin", "Doctor", "Receptionist", "Pharmacist"
+  code         String  @unique // e.g., "SUPER_ADMIN", "DOCTOR"
+  description  String?
+  isSystemRole Boolean @default(false) // Cannot be deleted
+
   // Audit
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
-  createdBy     String
-  updatedBy     String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  users         User[]
-  permissions   RolePermission[]
+  users       User[]
+  permissions RolePermission[]
 
   @@index([code])
   @@index([deletedAt])
 }
 
 model Permission {
-  id            String           @id @default(cuid())
-  module        String           // e.g., "patients", "appointments", "pharmacy"
-  action        String           // e.g., "create", "read", "update", "delete"
-  description   String?
-  
+  id          String  @id @default(cuid())
+  module      String // e.g., "patients", "appointments", "pharmacy"
+  action      String // e.g., "create", "read", "update", "delete"
+  description String?
+
   // Audit
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  roles         RolePermission[]
+  roles RolePermission[]
 
   @@unique([module, action])
   @@index([module])
 }
 
 model RolePermission {
-  id            String     @id @default(cuid())
-  roleId        String
-  role          Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permissionId  String
-  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime   @default(now())
+  id           String     @id @default(cuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@unique([roleId, permissionId])
 }
@@ -328,81 +329,82 @@ model RolePermission {
 // ============================================================================
 
 model Patient {
-  id                  String        @id @default(cuid())
-  hospitalId          String
-  hospital            Hospital      @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // UHID - Hospital-specific unique identifier
-  uhid                String        @unique // Format: HOS-YYMM-SEQ
-  
+  uhid String @unique // Format: HOS-YYMM-SEQ
+
   // Personal Info
-  firstName           String
-  middleName          String?
-  lastName            String
-  gender              Gender
-  dateOfBirth         DateTime
-  bloodGroup          BloodGroup?
-  maritalStatus       String?       // Single, Married, Divorced, Widowed
-  occupation          String?
-  
+  firstName     String
+  middleName    String?
+  lastName      String
+  gender        Gender
+  dateOfBirth   DateTime
+  bloodGroup    BloodGroup?
+  maritalStatus String? // Single, Married, Divorced, Widowed
+  occupation    String?
+
   // Contact Info
-  mobilePrimary       String        // Indian mobile: starts with 6-9
-  mobileSecondary     String?
-  email               String?
-  emergencyContact    String?
+  mobilePrimary        String // Indian mobile: starts with 6-9
+  mobileSecondary      String?
+  email                String?
+  emergencyContact     String?
   emergencyContactName String?
-  emergencyRelation   String?
-  
+  emergencyRelation    String?
+
   // Address
-  houseNo             String?
-  street              String?
-  area                String?
-  landmark            String?
-  city                String
-  district            String
-  state               String
-  pinCode             String        // 6-digit Indian PIN
-  
+  houseNo  String?
+  street   String?
+  area     String?
+  landmark String?
+  city     String
+  district String
+  state    String
+  pinCode  String // 6-digit Indian PIN
+
   // Indian Identity Documents (Encrypted at application level)
-  aadhaarNumber       String?       // 12-digit Aadhaar (stored encrypted)
-  abhaId              String?       // Ayushman Bharat Health Account
-  panNumber           String?
-  voterId             String?
-  
+  aadhaarNumber String? // 12-digit Aadhaar (stored encrypted)
+  abhaId        String? // Ayushman Bharat Health Account
+  panNumber     String?
+  voterId       String?
+
   // Insurance & Payment
-  patientType         PatientType   @default(CASH)
-  insurancePlanId     String?
-  insurancePlan       InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
-  insuranceNumber     String?
-  insuranceValidTill  DateTime?
-  
+  patientType        PatientType    @default(CASH)
+  insurancePlanId    String?
+  insurancePlan      InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
+  insuranceNumber    String?
+  insuranceValidTill DateTime?
+
   // Medical
-  allergies           String[]      // Array of known allergies
-  chronicConditions   String[]      // Array of chronic conditions
-  
+  allergies         String[] // Array of known allergies
+  chronicConditions String[] // Array of chronic conditions
+
   // Profile
-  photoUrl            String?
-  
+  photoUrl String?
+
   // Preferences
-  preferredLanguage   String        @default("en")
-  smsConsent          Boolean       @default(true)
-  whatsappConsent     Boolean       @default(false)
-  
+  preferredLanguage String  @default("en")
+  smsConsent        Boolean @default(true)
+  whatsappConsent   Boolean @default(false)
+
   // Audit
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  deletedAt           DateTime?
-  createdBy           String
-  updatedBy           String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  appointments        Appointment[]
-  opdQueues           OpdQueue[]
-  medicalRecords      MedicalRecord[]
-  prescriptions       Prescription[]
-  invoices            Invoice[]
-  vitalRecords        Vital[]
-  admissions          Admission[]
+  appointments   Appointment[]
+  opdQueues      OpdQueue[]
+  medicalRecords MedicalRecord[]
+  prescriptions  Prescription[]
+  invoices       Invoice[]
+  vitalRecords   Vital[]
+  admissions     Admission[]
+  SurgeryBooking SurgeryBooking[]
 
   @@index([hospitalId])
   @@index([uhid])
@@ -414,12 +416,12 @@ model Patient {
 }
 
 model UhidSequence {
-  id          String   @id @default(cuid())
-  hospitalId  String
-  hospital    Hospital @relation(fields: [hospitalId], references: [id])
-  yearMonth   String   // Format: YYMM (e.g., "2601" for Jan 2026)
-  lastSeq     Int      @default(0)
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  yearMonth  String // Format: YYMM (e.g., "2601" for Jan 2026)
+  lastSeq    Int      @default(0)
+
   @@unique([hospitalId, yearMonth])
   @@index([hospitalId])
 }
@@ -429,28 +431,28 @@ model UhidSequence {
 // ============================================================================
 
 model Department {
-  id            String    @id @default(cuid())
-  hospitalId    String
-  hospital      Hospital  @relation(fields: [hospitalId], references: [id])
-  
-  name          String    // e.g., "General Medicine", "Cardiology"
-  code          String    // Short code
-  description   String?
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
+  name        String // e.g., "General Medicine", "Cardiology"
+  code        String // Short code
+  description String?
+
   // Settings
-  isActive      Boolean   @default(true)
-  displayOrder  Int       @default(0)
-  
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
   // Audit
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  createdBy     String
-  updatedBy     String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  doctors       Doctor[]
-  services      ServiceMaster[]
+  doctors  Doctor[]
+  services ServiceMaster[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId])
@@ -458,48 +460,49 @@ model Department {
 }
 
 model Doctor {
-  id                  String           @id @default(cuid())
-  hospitalId          String
-  hospital            Hospital         @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Link to User account
-  userId              String           @unique
-  user                User             @relation(fields: [userId], references: [id])
-  
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
   // Professional Info
-  registrationNo      String           // Medical Council Registration
-  qualification       String[]         // ["MBBS", "MD", "DM"]
-  specialization      String
-  experience          Int?             // Years of experience
-  
+  registrationNo String // Medical Council Registration
+  qualification  String[] // ["MBBS", "MD", "DM"]
+  specialization String
+  experience     Int? // Years of experience
+
   // Department
-  departmentId        String
-  department          Department       @relation(fields: [departmentId], references: [id])
-  
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
   // Consultation
-  consultationFee     Decimal          @db.Decimal(10, 2)
-  followUpFee         Decimal?         @db.Decimal(10, 2)
-  avgConsultationTime Int              @default(15) // Minutes
-  
+  consultationFee     Decimal  @db.Decimal(10, 2)
+  followUpFee         Decimal? @db.Decimal(10, 2)
+  avgConsultationTime Int      @default(15) // Minutes
+
   // Settings
-  isAvailableOnline   Boolean          @default(false)
-  isActive            Boolean          @default(true)
-  
+  isAvailableOnline Boolean @default(false)
+  isActive          Boolean @default(true)
+
   // Audit
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  deletedAt           DateTime?
-  createdBy           String
-  updatedBy           String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  schedules           DoctorSchedule[]
-  appointments        Appointment[]
-  opdQueues           OpdQueue[]
-  medicalRecords      MedicalRecord[]
-  admissionsAsAdmitting Admission[] @relation("AdmittingDoctor")
-  admissionsAsAttending Admission[] @relation("AttendingDoctor")
-  doctorRounds        DoctorRound[]
+  schedules             DoctorSchedule[]
+  appointments          Appointment[]
+  opdQueues             OpdQueue[]
+  medicalRecords        MedicalRecord[]
+  admissionsAsAdmitting Admission[]      @relation("AdmittingDoctor")
+  admissionsAsAttending Admission[]      @relation("AttendingDoctor")
+  doctorRounds          DoctorRound[]
+  SurgeryBooking        SurgeryBooking[]
 
   @@index([hospitalId])
   @@index([departmentId])
@@ -508,24 +511,24 @@ model Doctor {
 }
 
 model DoctorSchedule {
-  id              String    @id @default(cuid())
-  doctorId        String
-  doctor          Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  
-  dayOfWeek       Int       // 0 = Sunday, 1 = Monday, ... 6 = Saturday
-  startTime       String    // Format: "HH:mm" (24-hour)
-  endTime         String    // Format: "HH:mm" (24-hour)
-  slotDuration    Int       @default(15) // Minutes per slot
-  bufferTime      Int       @default(5)  // Buffer between slots in minutes
-  maxPatients     Int?      // Max patients per session (optional cap)
-  
-  isActive        Boolean   @default(true)
-  
+  id       String @id @default(cuid())
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  dayOfWeek    Int // 0 = Sunday, 1 = Monday, ... 6 = Saturday
+  startTime    String // Format: "HH:mm" (24-hour)
+  endTime      String // Format: "HH:mm" (24-hour)
+  slotDuration Int    @default(15) // Minutes per slot
+  bufferTime   Int    @default(5) // Buffer between slots in minutes
+  maxPatients  Int? // Max patients per session (optional cap)
+
+  isActive Boolean @default(true)
+
   // Audit
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedBy       String?
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedBy String?
+
   @@unique([doctorId, dayOfWeek, startTime])
   @@index([doctorId])
   @@index([dayOfWeek])
@@ -536,53 +539,53 @@ model DoctorSchedule {
 // ============================================================================
 
 model Appointment {
-  id                  String            @id @default(cuid())
-  hospitalId          String
-  hospital            Hospital          @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // References
-  patientId           String
-  patient             Patient           @relation(fields: [patientId], references: [id])
-  doctorId            String
-  doctor              Doctor            @relation(fields: [doctorId], references: [id])
-  
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+
   // Scheduling
-  appointmentDate     DateTime          @db.Date
-  slotTime            String            // Format: "HH:mm"
-  endTime             String?           // Calculated: slotTime + duration
-  
+  appointmentDate DateTime @db.Date
+  slotTime        String // Format: "HH:mm"
+  endTime         String? // Calculated: slotTime + duration
+
   // Type & Status
-  consultationType    ConsultationType  @default(NEW)
-  status              AppointmentStatus @default(SCHEDULED)
-  
+  consultationType ConsultationType  @default(NEW)
+  status           AppointmentStatus @default(SCHEDULED)
+
   // Token
-  tokenNumber         String?           // e.g., "A-101"
-  tokenPrefix         String?           // e.g., "A" for morning, "B" for evening
-  
+  tokenNumber String? // e.g., "A-101"
+  tokenPrefix String? // e.g., "A" for morning, "B" for evening
+
   // Details
-  chiefComplaint      String?           // Brief reason for visit
-  notes               String?
-  
+  chiefComplaint String? // Brief reason for visit
+  notes          String?
+
   // Booking Info
-  bookedVia           String            @default("COUNTER") // COUNTER, ONLINE, PHONE
+  bookedVia           String    @default("COUNTER") // COUNTER, ONLINE, PHONE
   confirmedAt         DateTime?
   checkedInAt         DateTime?
   consultationStartAt DateTime?
   consultationEndAt   DateTime?
   cancelledAt         DateTime?
   cancellationReason  String?
-  
+
   // Audit
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  deletedAt           DateTime?
-  createdBy           String
-  updatedBy           String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  opdQueue            OpdQueue?
-  medicalRecord       MedicalRecord?
-  invoice             Invoice?
+  opdQueue      OpdQueue?
+  medicalRecord MedicalRecord?
+  invoice       Invoice?
 
   @@index([hospitalId])
   @@index([patientId])
@@ -593,37 +596,37 @@ model Appointment {
 }
 
 model OpdQueue {
-  id              String        @id @default(cuid())
-  hospitalId      String
-  hospital        Hospital      @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // References
-  appointmentId   String        @unique
-  appointment     Appointment   @relation(fields: [appointmentId], references: [id])
-  patientId       String
-  patient         Patient       @relation(fields: [patientId], references: [id])
-  doctorId        String
-  doctor          Doctor        @relation(fields: [doctorId], references: [id])
-  
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  patientId     String
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  doctorId      String
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+
   // Queue Info
-  queueDate       DateTime      @db.Date
-  tokenNumber     String        // e.g., "A-101"
-  position        Int           // Current position in queue
-  
+  queueDate   DateTime @db.Date
+  tokenNumber String // e.g., "A-101"
+  position    Int // Current position in queue
+
   // Status & Timing
-  status          QueueStatus   @default(WAITING)
-  checkInTime     DateTime?
-  callTime        DateTime?     // When called by doctor
-  startTime       DateTime?     // Consultation start
-  endTime         DateTime?     // Consultation end
-  
+  status      QueueStatus @default(WAITING)
+  checkInTime DateTime?
+  callTime    DateTime? // When called by doctor
+  startTime   DateTime? // Consultation start
+  endTime     DateTime? // Consultation end
+
   // Calculated
-  estimatedWait   Int?          // Estimated wait in minutes
-  actualWait      Int?          // Actual wait time
-  
+  estimatedWait Int? // Estimated wait in minutes
+  actualWait    Int? // Actual wait time
+
   // Audit
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([hospitalId])
   @@index([doctorId, queueDate])
@@ -636,61 +639,65 @@ model OpdQueue {
 // ============================================================================
 
 model MedicalRecord {
-  id                  String        @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // References
-  patientId           String
-  patient             Patient       @relation(fields: [patientId], references: [id])
-  doctorId            String
-  doctor              Doctor        @relation(fields: [doctorId], references: [id])
-  appointmentId       String        @unique
-  appointment         Appointment   @relation(fields: [appointmentId], references: [id])
-  
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  doctorId      String
+  doctor        Doctor       @relation(fields: [doctorId], references: [id])
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
+  // IPD Reference
+  admissionId String?
+  admission   Admission? @relation(fields: [admissionId], references: [id])
+
   // Consultation Details
-  consultationType    ConsultationType
-  consultationDate    DateTime      @default(now())
-  
+  consultationType ConsultationType
+  consultationDate DateTime         @default(now())
+
   // Chief Complaint & History
-  chiefComplaint      String?
+  chiefComplaint          String?
   historyOfPresentIllness String?
-  pastMedicalHistory  String?
-  familyHistory       String?
-  socialHistory       String?
-  
+  pastMedicalHistory      String?
+  familyHistory           String?
+  socialHistory           String?
+
   // Clinical Notes
   clinicalNotes       String?
   examinationFindings String?
-  
+
   // Assessment
-  provisionalDiagnosis String?
+  provisionalDiagnosis  String?
   differentialDiagnosis String[]
-  
+
   // Plan
-  treatmentPlan       String?
-  advice              String?
-  followUpDate        DateTime?
-  followUpNotes       String?
-  
+  treatmentPlan String?
+  advice        String?
+  followUpDate  DateTime?
+  followUpNotes String?
+
   // Referral
-  referredTo          String?       // Doctor/Specialist name
-  referralReason      String?
-  
+  referredTo     String? // Doctor/Specialist name
+  referralReason String?
+
   // Attachments
-  attachmentUrls      String[]      // S3 presigned URLs
-  
+  attachmentUrls String[] // S3 presigned URLs
+
   // Audit
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  deletedAt           DateTime?
-  createdBy           String
-  updatedBy           String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  vitals              Vital[]
-  symptoms            MedicalRecordSymptom[]
-  diagnoses           MedicalRecordDiagnosis[]
-  prescriptions       Prescription[]
-  labOrders           LabOrder[]
+  vitals        Vital[]
+  symptoms      MedicalRecordSymptom[]
+  diagnoses     MedicalRecordDiagnosis[]
+  prescriptions Prescription[]
+  labOrders     LabOrder[]
 
   @@index([patientId])
   @@index([doctorId])
@@ -699,42 +706,42 @@ model MedicalRecord {
 }
 
 model Vital {
-  id              String        @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // References
   patientId       String
-  patient         Patient       @relation(fields: [patientId], references: [id])
+  patient         Patient        @relation(fields: [patientId], references: [id])
   medicalRecordId String?
   medicalRecord   MedicalRecord? @relation(fields: [medicalRecordId], references: [id])
-  
+
   // Measurements
-  heightCm        Decimal?      @db.Decimal(5, 2)  // Height in cm
-  weightKg        Decimal?      @db.Decimal(5, 2)  // Weight in kg
-  bmiValue        Decimal?      @db.Decimal(4, 2)  // Calculated BMI
-  bmiCategory     String?       // Underweight, Normal, Overweight, Obese
-  
-  bpSystolic      Int?          // mmHg
-  bpDiastolic     Int?          // mmHg
-  pulseRate       Int?          // beats per minute
-  respiratoryRate Int?          // breaths per minute
-  temperatureF    Decimal?      @db.Decimal(4, 1)  // Fahrenheit
-  spO2            Int?          // Oxygen saturation %
-  
+  heightCm    Decimal? @db.Decimal(5, 2) // Height in cm
+  weightKg    Decimal? @db.Decimal(5, 2) // Weight in kg
+  bmiValue    Decimal? @db.Decimal(4, 2) // Calculated BMI
+  bmiCategory String? // Underweight, Normal, Overweight, Obese
+
+  bpSystolic      Int? // mmHg
+  bpDiastolic     Int? // mmHg
+  pulseRate       Int? // beats per minute
+  respiratoryRate Int? // breaths per minute
+  temperatureF    Decimal? @db.Decimal(4, 1) // Fahrenheit
+  spO2            Int? // Oxygen saturation %
+
   // Additional
-  bloodSugarFasting   Decimal?  @db.Decimal(5, 2)
-  bloodSugarPP        Decimal?  @db.Decimal(5, 2)  // Post-prandial
-  bloodSugarRandom    Decimal?  @db.Decimal(5, 2)
-  
-  painScore       Int?          // 0-10 scale
-  notes           String?
-  
+  bloodSugarFasting Decimal? @db.Decimal(5, 2)
+  bloodSugarPP      Decimal? @db.Decimal(5, 2) // Post-prandial
+  bloodSugarRandom  Decimal? @db.Decimal(5, 2)
+
+  painScore Int? // 0-10 scale
+  notes     String?
+
   // Recording Info
-  recordedAt      DateTime      @default(now())
-  recordedBy      String        // User ID who recorded
-  
+  recordedAt DateTime @default(now())
+  recordedBy String // User ID who recorded
+
   // Audit
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([patientId])
   @@index([medicalRecordId])
@@ -746,16 +753,16 @@ model Vital {
 // ============================================================================
 
 model SymptomMaster {
-  id            String                   @id @default(cuid())
-  name          String                   // e.g., "Fever", "Cough", "Headache"
-  nameHindi     String?                  // Hindi translation
-  category      String?                  // e.g., "General", "Respiratory", "Cardiac"
-  icdCodes      String[]                 // Related ICD-10 codes
-  isActive      Boolean                  @default(true)
-  
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @updatedAt
-  
+  id        String   @id @default(cuid())
+  name      String // e.g., "Fever", "Cough", "Headache"
+  nameHindi String? // Hindi translation
+  category  String? // e.g., "General", "Respiratory", "Cardiac"
+  icdCodes  String[] // Related ICD-10 codes
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   medicalRecords MedicalRecordSymptom[]
 
@@ -769,29 +776,29 @@ model MedicalRecordSymptom {
   medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
   symptomId       String
   symptom         SymptomMaster @relation(fields: [symptomId], references: [id])
-  
-  duration        String?       // e.g., "3 days", "1 week"
-  severity        String?       // Mild, Moderate, Severe
-  notes           String?
-  
-  createdAt       DateTime      @default(now())
+
+  duration String? // e.g., "3 days", "1 week"
+  severity String? // Mild, Moderate, Severe
+  notes    String?
+
+  createdAt DateTime @default(now())
 
   @@unique([medicalRecordId, symptomId])
 }
 
 model ICD10Code {
-  id              String                    @id @default(cuid())
-  code            String                    @unique // e.g., "J06.9"
-  shortDesc       String                    // Short description
-  longDesc        String?                   // Full description
-  category        String?                   // Category/Chapter
-  isActive        Boolean                   @default(true)
-  
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
-  
+  id        String  @id @default(cuid())
+  code      String  @unique // e.g., "J06.9"
+  shortDesc String // Short description
+  longDesc  String? // Full description
+  category  String? // Category/Chapter
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  diagnoses       MedicalRecordDiagnosis[]
+  diagnoses MedicalRecordDiagnosis[]
 
   @@index([code])
   @@index([shortDesc])
@@ -803,59 +810,59 @@ model MedicalRecordDiagnosis {
   medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
   icdCodeId       String
   icdCode         ICD10Code     @relation(fields: [icdCodeId], references: [id])
-  
-  isPrimary       Boolean       @default(false)
-  diagnosisType   String?       // Provisional, Confirmed, Differential
-  notes           String?
-  
-  createdAt       DateTime      @default(now())
+
+  isPrimary     Boolean @default(false)
+  diagnosisType String? // Provisional, Confirmed, Differential
+  notes         String?
+
+  createdAt DateTime @default(now())
 
   @@index([medicalRecordId])
 }
 
 model DrugMaster {
-  id                  String              @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Drug Info
-  genericName         String              // e.g., "Paracetamol"
-  brandName           String?             // e.g., "Crocin"
-  composition         String?             // e.g., "Paracetamol 500mg"
-  manufacturer        String?
-  
+  genericName  String // e.g., "Paracetamol"
+  brandName    String? // e.g., "Crocin"
+  composition  String? // e.g., "Paracetamol 500mg"
+  manufacturer String?
+
   // Classification
-  drugCategory        String?             // e.g., "Analgesic", "Antibiotic"
-  drugClass           String?             // e.g., "NSAID"
-  scheduleType        String?             // e.g., "H", "H1", "X" (Indian drug schedules)
-  
+  drugCategory String? // e.g., "Analgesic", "Antibiotic"
+  drugClass    String? // e.g., "NSAID"
+  scheduleType String? // e.g., "H", "H1", "X" (Indian drug schedules)
+
   // Form & Strength
-  dosageForm          String              // Tablet, Capsule, Syrup, Injection
-  strength            String?             // e.g., "500mg", "250mg/5ml"
-  packSize            String?             // e.g., "10 tablets", "100ml"
-  
+  dosageForm String // Tablet, Capsule, Syrup, Injection
+  strength   String? // e.g., "500mg", "250mg/5ml"
+  packSize   String? // e.g., "10 tablets", "100ml"
+
   // Defaults
   defaultFrequency    PrescriptionFrequency?
-  defaultDuration     Int?                // Default days
+  defaultDuration     Int? // Default days
   defaultRoute        DrugRoute?
-  defaultInstructions String?             // e.g., "Take after food"
-  
+  defaultInstructions String? // e.g., "Take after food"
+
   // Interactions & Warnings
-  contraindications   String[]
-  sideEffects         String[]
-  drugInteractions    String[]            // Drug IDs that interact
-  
+  contraindications String[]
+  sideEffects       String[]
+  drugInteractions  String[] // Drug IDs that interact
+
   // Pricing (MRP)
-  mrp                 Decimal?            @db.Decimal(10, 2)
-  
-  isActive            Boolean             @default(true)
-  isControlled        Boolean             @default(false)
-  
+  mrp Decimal? @db.Decimal(10, 2)
+
+  isActive     Boolean @default(true)
+  isControlled Boolean @default(false)
+
   // Audit
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  prescriptionItems   PrescriptionItem[]
-  inventoryItems      InventoryItem[]
+  prescriptionItems PrescriptionItem[]
+  inventoryItems    InventoryItem[]
 
   @@index([genericName])
   @@index([brandName])
@@ -867,44 +874,46 @@ model DrugMaster {
 // ============================================================================
 
 model Prescription {
-  id                String             @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // References
-  patientId         String
-  patient           Patient            @relation(fields: [patientId], references: [id])
-  medicalRecordId   String
-  medicalRecord     MedicalRecord      @relation(fields: [medicalRecordId], references: [id])
-  
+  patientId       String
+  patient         Patient        @relation(fields: [patientId], references: [id])
+  medicalRecordId String?
+  medicalRecord   MedicalRecord? @relation(fields: [medicalRecordId], references: [id])
+  admissionId     String?
+  admission       Admission?     @relation(fields: [admissionId], references: [id])
+
   // Prescription Info
-  prescriptionNo    String             @unique // Auto-generated
-  prescriptionDate  DateTime           @default(now())
-  
+  prescriptionNo   String   @unique // Auto-generated
+  prescriptionDate DateTime @default(now())
+
   // Validity
-  validTill         DateTime?
-  
+  validTill DateTime?
+
   // Notes
   generalInstructions String?
-  dietaryAdvice     String?
-  
+  dietaryAdvice       String?
+
   // Status
-  isDispensed       Boolean            @default(false)
-  dispensedAt       DateTime?
-  dispensedBy       String?
-  
+  isDispensed Boolean   @default(false)
+  dispensedAt DateTime?
+  dispensedBy String?
+
   // Drug Interaction Alert
-  hasInteractionAlert Boolean          @default(false)
-  interactionNotes  String?
-  
+  hasInteractionAlert Boolean @default(false)
+  interactionNotes    String?
+
   // Audit
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  items             PrescriptionItem[]
-  dispenseRecords   InventoryDispense[]
+  items           PrescriptionItem[]
+  dispenseRecords InventoryDispense[]
 
   @@index([patientId])
   @@index([medicalRecordId])
@@ -913,49 +922,49 @@ model Prescription {
 }
 
 model PrescriptionItem {
-  id                String                @id @default(cuid())
-  prescriptionId    String
-  prescription      Prescription          @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
-  
+  id             String       @id @default(cuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
   // Drug Reference
-  drugId            String
-  drug              DrugMaster            @relation(fields: [drugId], references: [id])
-  drugName          String                // Snapshot of drug name at time of prescription
-  
+  drugId   String
+  drug     DrugMaster @relation(fields: [drugId], references: [id])
+  drugName String // Snapshot of drug name at time of prescription
+
   // Dosage
-  dosage            String?               // e.g., "1 tablet", "5ml"
-  frequency         PrescriptionFrequency
-  frequencyCustom   String?               // If frequency is custom
-  route             DrugRoute             @default(ORAL)
-  
+  dosage          String? // e.g., "1 tablet", "5ml"
+  frequency       PrescriptionFrequency
+  frequencyCustom String? // If frequency is custom
+  route           DrugRoute             @default(ORAL)
+
   // Duration
-  duration          Int                   // Number of days
-  durationUnit      String                @default("days") // days, weeks, months
-  
+  duration     Int // Number of days
+  durationUnit String @default("days") // days, weeks, months
+
   // Timing
-  timing            String[]              // ["Morning", "Afternoon", "Night"]
-  relation          String?               // "Before food", "After food", "With food"
-  
+  timing   String[] // ["Morning", "Afternoon", "Night"]
+  relation String? // "Before food", "After food", "With food"
+
   // Quantity
-  quantity          Int                   // Total quantity to dispense
-  quantityUnit      String                @default("tablets")
-  
+  quantity     Int // Total quantity to dispense
+  quantityUnit String @default("tablets")
+
   // Instructions
-  instructions      String?               // Special instructions
-  
+  instructions String? // Special instructions
+
   // Alerts
-  alertLevel        AlertLevel?
-  alertMessage      String?               // Drug interaction warning
-  
+  alertLevel   AlertLevel?
+  alertMessage String? // Drug interaction warning
+
   // Dispensing
-  dispensedQty      Int                   @default(0)
-  isFullyDispensed  Boolean               @default(false)
-  
+  dispensedQty     Int     @default(0)
+  isFullyDispensed Boolean @default(false)
+
   // Order
-  displayOrder      Int                   @default(0)
-  
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  displayOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([prescriptionId])
   @@index([drugId])
@@ -966,41 +975,41 @@ model PrescriptionItem {
 // ============================================================================
 
 model InventoryItem {
-  id                String            @id @default(cuid())
-  hospitalId        String
-  hospital          Hospital          @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Drug Reference
-  drugId            String
-  drug              DrugMaster        @relation(fields: [drugId], references: [id])
-  
+  drugId String
+  drug   DrugMaster @relation(fields: [drugId], references: [id])
+
   // Stock Settings
-  reorderLevel      Int               @default(10)  // Minimum stock before alert
-  reorderQty        Int               @default(50)  // Default reorder quantity
-  maxStock          Int?                            // Maximum stock level
-  
+  reorderLevel Int  @default(10) // Minimum stock before alert
+  reorderQty   Int  @default(50) // Default reorder quantity
+  maxStock     Int? // Maximum stock level
+
   // Current Stock (Calculated from batches)
-  currentStock      Int               @default(0)
-  reservedStock     Int               @default(0)   // Reserved for pending orders
-  availableStock    Int               @default(0)   // currentStock - reservedStock
-  
+  currentStock   Int @default(0)
+  reservedStock  Int @default(0) // Reserved for pending orders
+  availableStock Int @default(0) // currentStock - reservedStock
+
   // Location
-  rackNo            String?
-  shelfNo           String?
-  binNo             String?
-  
+  rackNo  String?
+  shelfNo String?
+  binNo   String?
+
   // Settings
-  isActive          Boolean           @default(true)
-  
+  isActive Boolean @default(true)
+
   // Audit
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  batches           InventoryBatch[]
+  batches InventoryBatch[]
 
   @@unique([hospitalId, drugId])
   @@index([hospitalId])
@@ -1010,42 +1019,42 @@ model InventoryItem {
 }
 
 model InventoryBatch {
-  id                String          @id @default(cuid())
-  inventoryItemId   String
-  inventoryItem     InventoryItem   @relation(fields: [inventoryItemId], references: [id])
-  
+  id              String        @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
   // Batch Info
   batchNumber       String
-  expiryDate        DateTime        @db.Date
-  manufacturingDate DateTime?       @db.Date
-  
+  expiryDate        DateTime  @db.Date
+  manufacturingDate DateTime? @db.Date
+
   // Quantity
-  initialQty        Int             // Quantity when batch was received
-  currentQty        Int             // Current available quantity
-  reservedQty       Int             @default(0)
-  
+  initialQty  Int // Quantity when batch was received
+  currentQty  Int // Current available quantity
+  reservedQty Int @default(0)
+
   // Pricing
-  purchasePrice     Decimal         @db.Decimal(10, 2) // Cost price
-  sellingPrice      Decimal         @db.Decimal(10, 2) // MRP
-  discountPercent   Decimal?        @db.Decimal(5, 2)
-  
+  purchasePrice   Decimal  @db.Decimal(10, 2) // Cost price
+  sellingPrice    Decimal  @db.Decimal(10, 2) // MRP
+  discountPercent Decimal? @db.Decimal(5, 2)
+
   // Supplier
-  supplierId        String?
-  supplierName      String?
-  invoiceNo         String?         // Purchase invoice
-  invoiceDate       DateTime?
-  
+  supplierId   String?
+  supplierName String?
+  invoiceNo    String? // Purchase invoice
+  invoiceDate  DateTime?
+
   // Status
-  status            BatchStatus     @default(AVAILABLE)
-  
+  status BatchStatus @default(AVAILABLE)
+
   // Audit
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
   // Relations
-  dispenseRecords   InventoryDispenseItem[]
+  dispenseRecords InventoryDispenseItem[]
 
   @@index([inventoryItemId])
   @@index([expiryDate])
@@ -1054,58 +1063,58 @@ model InventoryBatch {
 }
 
 model InventoryDispense {
-  id                String                  @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // References
-  prescriptionId    String?
-  prescription      Prescription?           @relation(fields: [prescriptionId], references: [id])
-  
+  prescriptionId String?
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+
   // Dispense Info
-  dispenseNo        String                  @unique
-  dispenseDate      DateTime                @default(now())
-  dispenseType      String                  // PRESCRIPTION, COUNTER_SALE, RETURN
-  
+  dispenseNo   String   @unique
+  dispenseDate DateTime @default(now())
+  dispenseType String // PRESCRIPTION, COUNTER_SALE, RETURN
+
   // Patient (optional for counter sales)
-  patientName       String?
-  patientMobile     String?
-  
+  patientName   String?
+  patientMobile String?
+
   // Totals
-  subtotal          Decimal                 @db.Decimal(12, 2)
-  discountAmount    Decimal                 @db.Decimal(10, 2) @default(0)
-  taxAmount         Decimal                 @db.Decimal(10, 2) @default(0)
-  totalAmount       Decimal                 @db.Decimal(12, 2)
-  
+  subtotal       Decimal @db.Decimal(12, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  taxAmount      Decimal @default(0) @db.Decimal(10, 2)
+  totalAmount    Decimal @db.Decimal(12, 2)
+
   // Audit
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
   // Relations
-  items             InventoryDispenseItem[]
+  items InventoryDispenseItem[]
 
   @@index([prescriptionId])
   @@index([dispenseDate])
 }
 
 model InventoryDispenseItem {
-  id                  String            @id @default(cuid())
-  dispenseId          String
-  dispense            InventoryDispense @relation(fields: [dispenseId], references: [id], onDelete: Cascade)
-  
+  id         String            @id @default(cuid())
+  dispenseId String
+  dispense   InventoryDispense @relation(fields: [dispenseId], references: [id], onDelete: Cascade)
+
   // Batch Reference
-  batchId             String
-  batch               InventoryBatch    @relation(fields: [batchId], references: [id])
-  
+  batchId String
+  batch   InventoryBatch @relation(fields: [batchId], references: [id])
+
   // Quantity
-  quantity            Int
-  
+  quantity Int
+
   // Pricing at time of dispense
-  unitPrice           Decimal           @db.Decimal(10, 2)
-  discountPercent     Decimal?          @db.Decimal(5, 2)
-  totalPrice          Decimal           @db.Decimal(10, 2)
-  
-  createdAt           DateTime          @default(now())
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  discountPercent Decimal? @db.Decimal(5, 2)
+  totalPrice      Decimal  @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
 
   @@index([dispenseId])
   @@index([batchId])
@@ -1116,34 +1125,36 @@ model InventoryDispenseItem {
 // ============================================================================
 
 model LabOrder {
-  id                String        @id @default(cuid())
-  medicalRecordId   String
-  medicalRecord     MedicalRecord @relation(fields: [medicalRecordId], references: [id])
-  
+  id              String         @id @default(cuid())
+  medicalRecordId String?
+  medicalRecord   MedicalRecord? @relation(fields: [medicalRecordId], references: [id])
+  admissionId     String?
+  admission       Admission?     @relation(fields: [admissionId], references: [id])
+
   // Test Info
-  testName          String
-  testCode          String?
-  category          String?       // e.g., "Hematology", "Biochemistry"
-  
+  testName String
+  testCode String?
+  category String? // e.g., "Hematology", "Biochemistry"
+
   // Status
-  status            String        @default("ORDERED") // ORDERED, COLLECTED, IN_PROGRESS, COMPLETED
-  orderedAt         DateTime      @default(now())
-  collectedAt       DateTime?
-  completedAt       DateTime?
-  
+  status      String    @default("ORDERED") // ORDERED, COLLECTED, IN_PROGRESS, COMPLETED
+  orderedAt   DateTime  @default(now())
+  collectedAt DateTime?
+  completedAt DateTime?
+
   // Results
-  resultSummary     String?
-  resultUrl         String?       // S3 URL to result PDF
-  interpretation    String?
-  
+  resultSummary  String?
+  resultUrl      String? // S3 URL to result PDF
+  interpretation String?
+
   // Pricing
-  price             Decimal?      @db.Decimal(10, 2)
-  
+  price Decimal? @db.Decimal(10, 2)
+
   // Audit
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  createdBy         String
-  updatedBy         String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
 
   @@index([medicalRecordId])
   @@index([status])
@@ -1154,38 +1165,38 @@ model LabOrder {
 // ============================================================================
 
 model ServiceMaster {
-  id                String          @id @default(cuid())
-  hospitalId        String
-  hospital          Hospital        @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Service Info
-  name              String
-  code              String
-  description       String?
-  category          String?         // Consultation, Lab, Procedure, Pharmacy, Room
-  
+  name        String
+  code        String
+  description String?
+  category    String? // Consultation, Lab, Procedure, Pharmacy, Room
+
   // Department
-  departmentId      String?
-  department        Department?     @relation(fields: [departmentId], references: [id])
-  
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
   // Pricing
-  baseRate          Decimal         @db.Decimal(10, 2)
-  taxPercent        Decimal         @db.Decimal(5, 2) @default(0)
-  taxType           String?         // GST, CGST+SGST
-  
+  baseRate   Decimal @db.Decimal(10, 2)
+  taxPercent Decimal @default(0) @db.Decimal(5, 2)
+  taxType    String? // GST, CGST+SGST
+
   // Settings
-  isActive          Boolean         @default(true)
-  
+  isActive Boolean @default(true)
+
   // Audit
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  invoiceItems      InvoiceItem[]
-  rateContracts     RateContract[]
+  invoiceItems  InvoiceItem[]
+  rateContracts RateContract[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId])
@@ -1194,34 +1205,34 @@ model ServiceMaster {
 }
 
 model InsurancePlan {
-  id                String          @id @default(cuid())
-  hospitalId        String
-  hospital          Hospital        @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // TPA/Insurance Info
-  tpaName           String          // Third Party Administrator
-  planName          String
-  planCode          String?
-  
+  tpaName  String // Third Party Administrator
+  planName String
+  planCode String?
+
   // Contact
-  contactPerson     String?
-  contactPhone      String?
-  contactEmail      String?
-  
+  contactPerson String?
+  contactPhone  String?
+  contactEmail  String?
+
   // Settings
-  isActive          Boolean         @default(true)
-  isPmjay           Boolean         @default(false) // Ayushman Bharat
-  
+  isActive Boolean @default(true)
+  isPmjay  Boolean @default(false) // Ayushman Bharat
+
   // Audit
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  patients          Patient[]
-  rateContracts     RateContract[]
+  patients      Patient[]
+  rateContracts RateContract[]
 
   @@index([hospitalId])
   @@index([isPmjay])
@@ -1229,29 +1240,29 @@ model InsurancePlan {
 }
 
 model RateContract {
-  id                  String          @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // References
-  insurancePlanId     String
-  insurancePlan       InsurancePlan   @relation(fields: [insurancePlanId], references: [id])
-  serviceId           String
-  service             ServiceMaster   @relation(fields: [serviceId], references: [id])
-  
+  insurancePlanId String
+  insurancePlan   InsurancePlan @relation(fields: [insurancePlanId], references: [id])
+  serviceId       String
+  service         ServiceMaster @relation(fields: [serviceId], references: [id])
+
   // Contract Rate
-  agreedPercentage    Decimal         @db.Decimal(5, 2) // e.g., 80.00 = 80% of base rate
-  fixedRate           Decimal?        @db.Decimal(10, 2) // For PMJAY fixed packages
-  
+  agreedPercentage Decimal  @db.Decimal(5, 2) // e.g., 80.00 = 80% of base rate
+  fixedRate        Decimal? @db.Decimal(10, 2) // For PMJAY fixed packages
+
   // Validity
-  validFrom           DateTime
-  validTo             DateTime?
-  
-  isActive            Boolean         @default(true)
-  
+  validFrom DateTime
+  validTo   DateTime?
+
+  isActive Boolean @default(true)
+
   // Audit
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  createdBy           String
-  updatedBy           String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
 
   @@unique([insurancePlanId, serviceId])
   @@index([insurancePlanId])
@@ -1259,51 +1270,53 @@ model RateContract {
 }
 
 model Invoice {
-  id                String          @id @default(cuid())
-  hospitalId        String
-  hospital          Hospital        @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // References
-  patientId         String
-  patient           Patient         @relation(fields: [patientId], references: [id])
-  appointmentId     String?         @unique
-  appointment       Appointment?    @relation(fields: [appointmentId], references: [id])
-  
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  admissionId   String?      @unique
+  admission     Admission?   @relation(fields: [admissionId], references: [id])
+
   // Invoice Info
-  invoiceNo         String          @unique
-  invoiceDate       DateTime        @default(now())
-  dueDate           DateTime?
-  
+  invoiceNo   String    @unique
+  invoiceDate DateTime  @default(now())
+  dueDate     DateTime?
+
   // Amounts
-  subtotal          Decimal         @db.Decimal(12, 2)
-  discountAmount    Decimal         @db.Decimal(10, 2) @default(0)
-  discountReason    String?
-  taxAmount         Decimal         @db.Decimal(10, 2) @default(0)
-  totalAmount       Decimal         @db.Decimal(12, 2)
-  paidAmount        Decimal         @db.Decimal(12, 2) @default(0)
-  balanceAmount     Decimal         @db.Decimal(12, 2)
-  
+  subtotal       Decimal @db.Decimal(12, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  discountReason String?
+  taxAmount      Decimal @default(0) @db.Decimal(10, 2)
+  totalAmount    Decimal @db.Decimal(12, 2)
+  paidAmount     Decimal @default(0) @db.Decimal(12, 2)
+  balanceAmount  Decimal @db.Decimal(12, 2)
+
   // Insurance
-  insuranceClaimAmount  Decimal?    @db.Decimal(12, 2)
-  insuranceApprovedAmt  Decimal?    @db.Decimal(12, 2)
-  patientPayable        Decimal?    @db.Decimal(12, 2)
-  
+  insuranceClaimAmount Decimal? @db.Decimal(12, 2)
+  insuranceApprovedAmt Decimal? @db.Decimal(12, 2)
+  patientPayable       Decimal? @db.Decimal(12, 2)
+
   // Status
-  status            InvoiceStatus   @default(DRAFT)
-  
+  status InvoiceStatus @default(DRAFT)
+
   // Notes
-  notes             String?
-  
+  notes String?
+
   // Audit
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  deletedAt         DateTime?
-  createdBy         String
-  updatedBy         String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  items             InvoiceItem[]
-  payments          Payment[]
+  items    InvoiceItem[]
+  payments Payment[]
 
   @@index([hospitalId])
   @@index([patientId])
@@ -1313,60 +1326,60 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id                String        @id @default(cuid())
-  invoiceId         String
-  invoice           Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
   // Service Reference
-  serviceId         String?
-  service           ServiceMaster? @relation(fields: [serviceId], references: [id])
-  
+  serviceId String?
+  service   ServiceMaster? @relation(fields: [serviceId], references: [id])
+
   // Item Details
-  description       String
-  category          String?       // Consultation, Lab, Pharmacy, Room, Procedure
-  
+  description String
+  category    String? // Consultation, Lab, Pharmacy, Room, Procedure
+
   // Quantity & Pricing
-  quantity          Int           @default(1)
-  unitPrice         Decimal       @db.Decimal(10, 2)
-  discountPercent   Decimal?      @db.Decimal(5, 2)
-  discountAmount    Decimal       @db.Decimal(10, 2) @default(0)
-  taxPercent        Decimal?      @db.Decimal(5, 2)
-  taxAmount         Decimal       @db.Decimal(10, 2) @default(0)
-  totalAmount       Decimal       @db.Decimal(10, 2)
-  
+  quantity        Int      @default(1)
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  discountPercent Decimal? @db.Decimal(5, 2)
+  discountAmount  Decimal  @default(0) @db.Decimal(10, 2)
+  taxPercent      Decimal? @db.Decimal(5, 2)
+  taxAmount       Decimal  @default(0) @db.Decimal(10, 2)
+  totalAmount     Decimal  @db.Decimal(10, 2)
+
   // Order
-  displayOrder      Int           @default(0)
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  displayOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([invoiceId])
   @@index([serviceId])
 }
 
 model Payment {
-  id                String        @id @default(cuid())
-  invoiceId         String
-  invoice           Invoice       @relation(fields: [invoiceId], references: [id])
-  
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
   // Payment Info
-  paymentNo         String        @unique
-  paymentDate       DateTime      @default(now())
-  amount            Decimal       @db.Decimal(12, 2)
-  paymentMode       PaymentMode
-  
+  paymentNo   String      @unique
+  paymentDate DateTime    @default(now())
+  amount      Decimal     @db.Decimal(12, 2)
+  paymentMode PaymentMode
+
   // Reference
-  referenceNo       String?       // UPI Ref, Cheque No, Card last 4 digits
-  bankName          String?
-  
+  referenceNo String? // UPI Ref, Cheque No, Card last 4 digits
+  bankName    String?
+
   // Notes
-  notes             String?
-  
+  notes String?
+
   // Audit
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  createdBy         String
-  updatedBy         String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
 
   @@index([invoiceId])
   @@index([paymentDate])
@@ -1377,40 +1390,40 @@ model Payment {
 // ============================================================================
 
 model Ward {
-  id              String      @id @default(cuid())
-  hospitalId      String
-  hospital        Hospital    @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Ward Info
-  name            String      // "General Ward A", "ICU", "Private Room Block"
-  code            String      // "GWA", "ICU", "PVT"
-  type            WardType    @default(GENERAL)
-  floor           String?     // "Ground Floor", "1st Floor"
-  building        String?     // For multi-building hospitals
-  
+  name     String // "General Ward A", "ICU", "Private Room Block"
+  code     String // "GWA", "ICU", "PVT"
+  type     WardType @default(GENERAL)
+  floor    String? // "Ground Floor", "1st Floor"
+  building String? // For multi-building hospitals
+
   // Capacity
-  totalBeds       Int         @default(0)
-  
+  totalBeds Int @default(0)
+
   // Pricing
-  dailyRate       Decimal     @db.Decimal(10, 2) @default(0)
-  
+  dailyRate Decimal @default(0) @db.Decimal(10, 2)
+
   // Contact
-  nursingStation  String?     // Nursing station extension/number
-  inCharge        String?     // Ward in-charge name
-  
+  nursingStation String? // Nursing station extension/number
+  inCharge       String? // Ward in-charge name
+
   // Settings
-  isActive        Boolean     @default(true)
-  displayOrder    Int         @default(0)
-  
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
   // Audit
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  deletedAt       DateTime?
-  createdBy       String
-  updatedBy       String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  beds            Bed[]
+  beds Bed[]
 
   @@unique([hospitalId, code])
   @@index([hospitalId])
@@ -1420,41 +1433,41 @@ model Ward {
 }
 
 model Bed {
-  id              String      @id @default(cuid())
-  wardId          String
-  ward            Ward        @relation(fields: [wardId], references: [id])
-  
+  id     String @id @default(cuid())
+  wardId String
+  ward   Ward   @relation(fields: [wardId], references: [id])
+
   // Bed Info
-  bedNumber       String      // "101", "ICU-1", "A-12"
-  bedType         String      @default("Regular") // Regular, Electric, ICU, Ventilator
-  
+  bedNumber String // "101", "ICU-1", "A-12"
+  bedType   String @default("Regular") // Regular, Electric, ICU, Ventilator
+
   // Status
-  status          BedStatus   @default(AVAILABLE)
-  
+  status BedStatus @default(AVAILABLE)
+
   // Pricing (override ward rate if different)
-  dailyRate       Decimal?    @db.Decimal(10, 2)
-  
+  dailyRate Decimal? @db.Decimal(10, 2)
+
   // Features
-  hasOxygen       Boolean     @default(false)
-  hasMonitor      Boolean     @default(false)
-  hasVentilator   Boolean     @default(false)
-  
+  hasOxygen     Boolean @default(false)
+  hasMonitor    Boolean @default(false)
+  hasVentilator Boolean @default(false)
+
   // Position
-  floor           String?
-  wing            String?     // "East Wing", "West Wing"
-  
+  floor String?
+  wing  String? // "East Wing", "West Wing"
+
   // Settings
-  isActive        Boolean     @default(true)
-  
+  isActive Boolean @default(true)
+
   // Audit
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  deletedAt       DateTime?
-  createdBy       String
-  updatedBy       String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  admissions      Admission[]
+  admissions       Admission[]
   bedTransfersFrom BedTransfer[] @relation("FromBed")
   bedTransfersTo   BedTransfer[] @relation("ToBed")
 
@@ -1466,66 +1479,71 @@ model Bed {
 }
 
 model Admission {
-  id                  String          @id @default(cuid())
-  hospitalId          String
-  hospital            Hospital        @relation(fields: [hospitalId], references: [id])
-  
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
   // Admission Number
-  admissionNo         String          @unique  // "ADM-2602-0001"
-  
+  admissionNo String @unique // "ADM-2602-0001"
+
   // Patient
-  patientId           String
-  patient             Patient         @relation(fields: [patientId], references: [id])
-  
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
   // Admitting Doctor
-  admittingDoctorId   String
-  admittingDoctor     Doctor          @relation("AdmittingDoctor", fields: [admittingDoctorId], references: [id])
-  
+  admittingDoctorId String
+  admittingDoctor   Doctor @relation("AdmittingDoctor", fields: [admittingDoctorId], references: [id])
+
   // Attending Doctor (may differ from admitting)
-  attendingDoctorId   String?
-  attendingDoctor     Doctor?         @relation("AttendingDoctor", fields: [attendingDoctorId], references: [id])
-  
+  attendingDoctorId String?
+  attendingDoctor   Doctor? @relation("AttendingDoctor", fields: [attendingDoctorId], references: [id])
+
   // Current Bed
-  bedId               String
-  bed                 Bed             @relation(fields: [bedId], references: [id])
-  
+  bedId String
+  bed   Bed    @relation(fields: [bedId], references: [id])
+
   // Admission Details
-  admissionDate       DateTime        @default(now())
-  admissionType       String          @default("ELECTIVE") // ELECTIVE, EMERGENCY
-  admissionReason     String
-  chiefComplaint      String?
+  admissionDate        DateTime @default(now())
+  admissionType        String   @default("ELECTIVE") // ELECTIVE, EMERGENCY
+  admissionReason      String
+  chiefComplaint       String?
   provisionalDiagnosis String?
-  
+
   // Status
-  status              AdmissionStatus @default(ADMITTED)
-  
+  status AdmissionStatus @default(ADMITTED)
+
   // Expected
-  expectedStayDays    Int?
-  expectedDischarge   DateTime?
-  
+  expectedStayDays  Int?
+  expectedDischarge DateTime?
+
   // Discharge Info
-  dischargeDate       DateTime?
-  dischargeType       String?         // Normal, LAMA, Referred, Expired, Absconded
-  dischargeSummary    String?
-  dischargeAdvice     String?
-  followUpDate        DateTime?
-  
+  dischargeDate    DateTime?
+  dischargeType    String? // Normal, LAMA, Referred, Expired, Absconded
+  dischargeSummary String?
+  dischargeAdvice  String?
+  followUpDate     DateTime?
+
   // Insurance
-  isInsured           Boolean         @default(false)
-  insuranceApprovalNo String?
-  insuranceApprovedAmount Decimal?    @db.Decimal(12, 2)
-  
+  isInsured               Boolean  @default(false)
+  insuranceApprovalNo     String?
+  insuranceApprovedAmount Decimal? @db.Decimal(12, 2)
+
   // Audit
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  deletedAt           DateTime?
-  createdBy           String
-  updatedBy           String
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
   // Relations
-  nursingNotes        NursingNote[]
-  doctorRounds        DoctorRound[]
-  bedTransfers        BedTransfer[]
+  nursingNotes   NursingNote[]
+  doctorRounds   DoctorRound[]
+  bedTransfers   BedTransfer[]
+  MedicalRecord  MedicalRecord[]
+  Prescription   Prescription[]
+  LabOrder       LabOrder[]
+  Invoice        Invoice?
+  SurgeryBooking SurgeryBooking[]
 
   @@index([hospitalId])
   @@index([patientId])
@@ -1537,33 +1555,33 @@ model Admission {
 }
 
 model NursingNote {
-  id              String      @id @default(cuid())
-  admissionId     String
-  admission       Admission   @relation(fields: [admissionId], references: [id])
-  
+  id          String    @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+
   // Note Details
-  noteType        String      @default("ROUTINE") // ROUTINE, VITALS, MEDICATION, OBSERVATION, PROCEDURE, HANDOVER
-  shift           String?     // Morning, Evening, Night
-  
+  noteType String  @default("ROUTINE") // ROUTINE, VITALS, MEDICATION, OBSERVATION, PROCEDURE, HANDOVER
+  shift    String? // Morning, Evening, Night
+
   // Content
-  content         String
-  
+  content String
+
   // Vitals (optional, for vitals type notes)
-  temperature     Decimal?    @db.Decimal(4, 1)
+  temperature     Decimal? @db.Decimal(4, 1)
   bpSystolic      Int?
   bpDiastolic     Int?
   pulseRate       Int?
   respiratoryRate Int?
   spO2            Int?
-  
+
   // Recording Info
-  recordedAt      DateTime    @default(now())
-  recordedBy      String      // User ID
-  recordedByName  String?     // Snapshot of nurse name
-  
+  recordedAt     DateTime @default(now())
+  recordedBy     String // User ID
+  recordedByName String? // Snapshot of nurse name
+
   // Audit
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([admissionId])
   @@index([noteType])
@@ -1571,33 +1589,33 @@ model NursingNote {
 }
 
 model DoctorRound {
-  id              String      @id @default(cuid())
-  admissionId     String
-  admission       Admission   @relation(fields: [admissionId], references: [id])
-  
+  id          String    @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+
   // Doctor
-  doctorId        String
-  doctor          Doctor      @relation(fields: [doctorId], references: [id])
-  
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
   // Round Details
-  roundDate       DateTime    @default(now())
-  roundType       String      @default("ROUTINE") // ROUTINE, MORNING, EVENING, EMERGENCY
-  
+  roundDate DateTime @default(now())
+  roundType String   @default("ROUTINE") // ROUTINE, MORNING, EVENING, EMERGENCY
+
   // Clinical Notes
-  clinicalNotes   String?
-  assessment      String?
-  plan            String?
-  orders          String?     // Treatment orders, investigations
-  
+  clinicalNotes String?
+  assessment    String?
+  plan          String?
+  orders        String? // Treatment orders, investigations
+
   // Review
-  reviewStatus    String?     // Stable, Improving, Critical, etc.
-  escalationNeeded Boolean    @default(false)
-  
+  reviewStatus     String? // Stable, Improving, Critical, etc.
+  escalationNeeded Boolean @default(false)
+
   // Audit
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  createdBy       String
-  updatedBy       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
 
   @@index([admissionId])
   @@index([doctorId])
@@ -1605,26 +1623,26 @@ model DoctorRound {
 }
 
 model BedTransfer {
-  id              String      @id @default(cuid())
-  admissionId     String
-  admission       Admission   @relation(fields: [admissionId], references: [id])
-  
+  id          String    @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+
   // From
-  fromBedId       String
-  fromBed         Bed         @relation("FromBed", fields: [fromBedId], references: [id])
-  
+  fromBedId String
+  fromBed   Bed    @relation("FromBed", fields: [fromBedId], references: [id])
+
   // To
-  toBedId         String
-  toBed           Bed         @relation("ToBed", fields: [toBedId], references: [id])
-  
+  toBedId String
+  toBed   Bed    @relation("ToBed", fields: [toBedId], references: [id])
+
   // Transfer Details
-  transferDate    DateTime    @default(now())
-  reason          String?     // Upgrade, Downgrade, Patient Request, Medical Necessity
-  notes           String?
-  
+  transferDate DateTime @default(now())
+  reason       String? // Upgrade, Downgrade, Patient Request, Medical Necessity
+  notes        String?
+
   // Audit
-  createdAt       DateTime    @default(now())
-  createdBy       String
+  createdAt DateTime @default(now())
+  createdBy String
 
   @@index([admissionId])
   @@index([fromBedId])
@@ -1633,11 +1651,88 @@ model BedTransfer {
 }
 
 model AdmissionSequence {
-  id          String   @id @default(cuid())
-  hospitalId  String
-  yearMonth   String   // Format: YYMM (e.g., "2602" for Feb 2026)
-  lastSeq     Int      @default(0)
-  
+  id         String @id @default(cuid())
+  hospitalId String
+  yearMonth  String // Format: YYMM (e.g., "2602" for Feb 2026)
+  lastSeq    Int    @default(0)
+
   @@unique([hospitalId, yearMonth])
   @@index([hospitalId])
+}
+
+// ============================================================================
+// OT & SURGERY MANAGEMENT
+// ============================================================================
+
+model OTRoom {
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
+  name String // e.g., "OT 1", "Major OT"
+  code String // e.g., "OT-01"
+  type String? // e.g., "General", "Cardiac", "Ortho"
+
+  // Status
+  status String @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE, DEEP_CLEANING
+
+  // Audit
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String
+
+  // Relations
+  bookings SurgeryBooking[]
+
+  @@unique([hospitalId, code])
+  @@index([hospitalId])
+  @@index([status])
+}
+
+model SurgeryBooking {
+  id         String @id @default(cuid())
+  hospitalId String
+
+  // References
+  patientId   String
+  patient     Patient    @relation(fields: [patientId], references: [id])
+  admissionId String?
+  admission   Admission? @relation(fields: [admissionId], references: [id])
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  otRoomId String
+  otRoom   OTRoom @relation(fields: [otRoomId], references: [id])
+
+  // Surgery Details
+  procedureName   String
+  surgeryDate     DateTime // Scheduled date
+  startTime       String? // "09:00"
+  endTime         String? // "11:00"
+  durationMinutes Int?
+
+  // Status
+  status String @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+
+  // Notes
+  preOpNotes      String?
+  postOpNotes     String?
+  anesthesiaType  String? // GA, LA, SA
+  anesthetistName String?
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  @@index([patientId])
+  @@index([admissionId])
+  @@index([otRoomId])
+  @@index([surgeryDate])
+  @@index([status])
 }

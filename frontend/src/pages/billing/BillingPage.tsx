@@ -3,9 +3,11 @@
 // Billing, invoicing, and payments
 // ============================================================================
 
+import { useNavigate } from 'react-router-dom';
 import { Receipt, Search, Plus, IndianRupee, CreditCard, Clock } from 'lucide-react';
 
 export default function BillingPage() {
+    const navigate = useNavigate();
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -19,7 +21,10 @@ export default function BillingPage() {
                         Generate invoices and process payments
                     </p>
                 </div>
-                <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                <button
+                    onClick={() => navigate('/billing/new')}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
                     <Plus className="w-4 h-4" />
                     New Invoice
                 </button>

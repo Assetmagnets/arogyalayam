@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from './components/ui/toaster';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout';
-import AuthLayout from './components/layout/AuthLayout';
+// import AuthLayout from './components/layout/AuthLayout';
 
 // Pages
 import LoginPage from './pages/auth/LoginPage';

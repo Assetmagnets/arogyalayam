@@ -466,7 +466,7 @@ router.post(
                 return;
             }
 
-            const [updatedQueue, medicalRecord] = await prisma.$transaction(async (tx) => {
+            const [updatedQueue] = await prisma.$transaction(async (tx) => {
                 const q = await tx.opdQueue.update({
                     where: { id: queueId },
                     data: {

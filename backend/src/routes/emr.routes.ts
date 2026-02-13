@@ -64,7 +64,7 @@ const CreateMedicalRecordSchema = z.object({
 router.get(
     '/patient/:patientId',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const { patientId } = req.params;
             const records = await prisma.medicalRecord.findMany({
@@ -103,7 +103,7 @@ router.get(
 router.get(
     '/:id',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const { id } = req.params;
             const record = await prisma.medicalRecord.findUnique({
@@ -157,8 +157,8 @@ router.get(
 router.post(
     '/',
     authenticate,
-    requirePermission('EMR_WRITE'), // Ensure this permission exists or use generic
-    async (req, res) => {
+    requirePermission('emr', 'create'),
+    async (req, res): Promise<void> => {
         try {
             const data = CreateMedicalRecordSchema.parse(req.body);
             const user = req.user as any;
@@ -241,7 +241,8 @@ router.post(
         } catch (error) {
             console.error('Error creating medical record:', error);
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ error: error.errors });
+                res.status(400).json({ error: error.errors });
+                return;
             }
             res.status(500).json({ error: 'Failed to create medical record' });
         }

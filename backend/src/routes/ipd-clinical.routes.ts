@@ -65,7 +65,7 @@ const CreateSurgeryBookingSchema = z.object({
 router.get(
     '/prescriptions/:admissionId',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const { admissionId } = req.params;
             const prescriptions = await prisma.prescription.findMany({
@@ -90,8 +90,8 @@ router.get(
 router.post(
     '/prescriptions',
     authenticate,
-    requirePermission('EMR_WRITE'),
-    async (req, res) => {
+    requirePermission('emr', 'create'),
+    async (req, res): Promise<void> => {
         try {
             const data = CreatePrescriptionSchema.parse(req.body);
             const user = req.user as any;
@@ -129,7 +129,8 @@ router.post(
         } catch (error) {
             console.error('Error creating prescription:', error);
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ error: error.errors });
+                res.status(400).json({ error: error.errors });
+                return;
             }
             res.status(500).json({ error: 'Failed to create prescription' });
         }
@@ -147,7 +148,7 @@ router.post(
 router.get(
     '/lab-orders/:admissionId',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const { admissionId } = req.params;
             const orders = await prisma.labOrder.findMany({
@@ -169,8 +170,8 @@ router.get(
 router.post(
     '/lab-orders',
     authenticate,
-    requirePermission('EMR_WRITE'),
-    async (req, res) => {
+    requirePermission('emr', 'create'),
+    async (req, res): Promise<void> => {
         try {
             const data = CreateLabOrderSchema.parse(req.body);
             const user = req.user as any;
@@ -196,7 +197,8 @@ router.post(
         } catch (error) {
             console.error('Error creating lab orders:', error);
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ error: error.errors });
+                res.status(400).json({ error: error.errors });
+                return;
             }
             res.status(500).json({ error: 'Failed to create lab orders' });
         }
@@ -214,7 +216,7 @@ router.post(
 router.get(
     '/ot-rooms',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const { hospitalId } = req.user as any;
             const rooms = await prisma.oTRoom.findMany({
@@ -236,8 +238,8 @@ router.get(
 router.post(
     '/surgeries',
     authenticate,
-    requirePermission('IPD_WRITE'),
-    async (req, res) => {
+    requirePermission('ipd', 'create'),
+    async (req, res): Promise<void> => {
         try {
             const data = CreateSurgeryBookingSchema.parse(req.body);
             const user = req.user as any;
@@ -264,7 +266,8 @@ router.post(
         } catch (error) {
             console.error('Error booking surgery:', error);
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ error: error.errors });
+                res.status(400).json({ error: error.errors });
+                return;
             }
             res.status(500).json({ error: 'Failed to book surgery' });
         }
@@ -278,7 +281,7 @@ router.post(
 router.get(
     '/surgeries',
     authenticate,
-    async (req, res) => {
+    async (req, res): Promise<void> => {
         try {
             const user = req.user as any;
             const { hospitalId } = user;

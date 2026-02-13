@@ -4,6 +4,7 @@ import { Plus, Pill, Clock, FileText, Loader2, Trash2 } from 'lucide-react';
 
 interface PrescriptionItem {
     id: string;
+    drugId?: string;
     drugName: string;
     dosage?: string;
     frequency: string;
@@ -86,9 +87,7 @@ export default function PrescriptionList({ admissionId, patientId }: Prescriptio
                 patientId,
                 admissionId,
                 items: validItems.map(item => ({
-                    drugId: 'TEMP-' + Math.random(), // Backend needs drugId, but if free text? Backend schema allows free text if we handle it? 
-                    // Wait, schema has DrugMaster? Or just string?
-                    // Schema: `drugId String` but also `drugName String`. 
+
                     // `drugId` usually refs `DrugMaster`. If not using master, we might need a workaround or valid ID.
                     // For now, I'll assume we need a valid ID or the backend handles ad-hoc if `drugId` is not strictly enforced as FK to a master that MUST exist?
                     // `DrugMaster` existence is likely enforced if it's a relation. 

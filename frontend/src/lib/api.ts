@@ -21,6 +21,12 @@ interface ApiResponse<T> {
         total?: number;
         totalPages?: number;
     };
+    pagination?: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
 }
 
 interface RequestOptions {
@@ -79,6 +85,17 @@ class ApiClient {
 
         if (!response.ok) {
             if (response.status === 401) {
+                // Skip global 401 handling for login endpoint
+                if (path.includes('/auth/login')) {
+                    const error = new Error(json.error?.message || 'Invalid credentials') as Error & {
+                        code?: string;
+                        status?: number;
+                    };
+                    error.code = 'INVALID_CREDENTIALS';
+                    error.status = 401;
+                    throw error;
+                }
+
                 // Token is invalid or expired — clear auth and redirect to login
                 localStorage.removeItem('hms_access_token');
                 localStorage.removeItem('hms_refresh_token');

@@ -29,6 +29,7 @@ import PharmacyPage from './pages/pharmacy/PharmacyPage';
 import LaboratoryPage from './pages/lab/LaboratoryPage';
 import BillingPage from './pages/billing/BillingPage';
 import NewInvoicePage from './pages/billing/NewInvoicePage';
+import InvoiceDetailsPage from './pages/billing/InvoiceDetailsPage';
 import ReportsPage from './pages/reports/ReportsPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import HospitalSettingsPage from './pages/settings/HospitalSettingsPage';
@@ -78,6 +79,7 @@ function App() {
                     {/* Billing */}
                     <Route path="/billing" element={<BillingPage />} />
                     <Route path="/billing/new" element={<NewInvoicePage />} />
+                    <Route path="/billing/invoices/:id" element={<InvoiceDetailsPage />} />
 
                     {/* Reports */}
                     <Route path="/reports" element={<ReportsPage />} />

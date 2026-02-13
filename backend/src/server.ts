@@ -26,6 +26,7 @@ import opdRoutes from './routes/opd.routes.js';
 import ipdRoutes from './routes/ipd.routes.js';
 import ipdClinicalRoutes from './routes/ipd-clinical.routes.js';
 import emrRoutes from './routes/emr.routes.js';
+import billingRoutes from './routes/billing.routes.js';
 
 // ============================================================================
 // APP SETUP
@@ -136,6 +137,7 @@ app.use(`${API_PREFIX}/opd`, opdRoutes);
 app.use(`${API_PREFIX}/ipd`, ipdRoutes);
 app.use(`${API_PREFIX}/ipd/clinical`, ipdClinicalRoutes);
 app.use(`${API_PREFIX}/emr`, emrRoutes);
+app.use(`${API_PREFIX}/billing`, billingRoutes);
 
 // ============================================================================
 // ERROR HANDLING

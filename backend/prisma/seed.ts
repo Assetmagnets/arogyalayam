@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🌱 Starting database seed...');
+    console.log('Starting database seed...');
 
     // ========================================================================
     // 1. CREATE ROLES
@@ -116,7 +116,7 @@ async function main() {
     ]);
 
     const roleMap = new Map(roles.map((r) => [r.code, r]));
-    console.log(`✅ Created ${roles.length} roles`);
+    console.log(`Created ${roles.length} roles`);
 
     // ========================================================================
     // 2. CREATE PERMISSIONS
@@ -141,7 +141,7 @@ async function main() {
             permissions.push(perm);
         }
     }
-    console.log(`✅ Created ${permissions.length} permissions`);
+    console.log(`Created ${permissions.length} permissions`);
 
     // ========================================================================
     // 3. ASSIGN PERMISSIONS TO ROLES
@@ -196,7 +196,7 @@ async function main() {
         });
     }
 
-    console.log('✅ Assigned permissions to roles');
+    console.log('Assigned permissions to roles');
 
     // ========================================================================
     // 4. CREATE HOSPITAL
@@ -223,7 +223,7 @@ async function main() {
             updatedBy: 'system',
         },
     });
-    console.log(`✅ Created hospital: ${hospital.name}`);
+    console.log(`Created hospital: ${hospital.name}`);
 
     // ========================================================================
     // 5. CREATE DEPARTMENTS
@@ -284,7 +284,7 @@ async function main() {
             },
         }),
     ]);
-    console.log(`✅ Created ${departments.length} departments`);
+    console.log(`Created ${departments.length} departments`);
 
     // ========================================================================
     // 6. CREATE ADMIN USER
@@ -310,7 +310,7 @@ async function main() {
             updatedBy: 'system',
         },
     });
-    console.log(`✅ Created admin user: ${adminUser.email}`);
+    console.log(`Created admin user: ${adminUser.email}`);
 
     // ========================================================================
     // 7. CREATE SAMPLE DOCTOR
@@ -398,7 +398,7 @@ async function main() {
             },
         });
     }
-    console.log(`✅ Created doctor: Dr. ${doctorUser.firstName} ${doctorUser.lastName}`);
+    console.log(`Created doctor: Dr. ${doctorUser.firstName} ${doctorUser.lastName}`);
 
     // ========================================================================
     // 8. CREATE SAMPLE PATIENT
@@ -450,7 +450,7 @@ async function main() {
             updatedBy: 'system',
         },
     });
-    console.log(`✅ Created patient: ${patient.firstName} ${patient.lastName} (${patient.uhid})`);
+    console.log(`Created patient: ${patient.firstName} ${patient.lastName} (${patient.uhid})`);
 
     // ========================================================================
     // 9. CREATE RECEPTIONIST USER
@@ -476,20 +476,146 @@ async function main() {
             updatedBy: 'system',
         },
     });
-    console.log(`✅ Created receptionist: ${receptionistUser.firstName} ${receptionistUser.lastName}`);
+    console.log(`Created receptionist: ${receptionistUser.firstName} ${receptionistUser.lastName}`);
+
+    // ========================================================================
+    // 10. CREATE SERVICE MASTER DATA
+    // ========================================================================
+    console.log('Creating service master data...');
+
+    const services = [
+        // CONSULTATION
+        {
+            code: 'CON-GEN',
+            name: 'General Consultation',
+            category: 'Consultation',
+            departmentId: departments[0].id,
+            baseRate: 500,
+            taxPercent: 0,
+            isActive: true,
+        },
+        {
+            code: 'CON-SPEC',
+            name: 'Specialist Consultation',
+            category: 'Consultation',
+            departmentId: departments[1].id,
+            baseRate: 800,
+            taxPercent: 0,
+            isActive: true,
+        },
+        // LAB
+        {
+            code: 'LAB-CBC',
+            name: 'Complete Blood Count (CBC)',
+            category: 'Lab',
+            departmentId: departments[0].id,
+            baseRate: 350,
+            taxPercent: 0,
+            isActive: true,
+        },
+        {
+            code: 'LAB-LIPID',
+            name: 'Lipid Profile',
+            category: 'Lab',
+            departmentId: departments[0].id,
+            baseRate: 600,
+            taxPercent: 0,
+            isActive: true,
+        },
+        {
+            code: 'LAB-XRAY',
+            name: 'X-Ray Chest PA View',
+            category: 'Lab',
+            departmentId: departments[2].id,
+            baseRate: 500,
+            taxPercent: 0,
+            isActive: true,
+        },
+        // PROCEDURES
+        {
+            code: 'PROC-DRESS',
+            name: 'Wound Dressing - Small',
+            category: 'Procedures',
+            departmentId: departments[0].id,
+            baseRate: 200,
+            taxPercent: 0,
+            isActive: true,
+        },
+        {
+            code: 'PROC-INJ',
+            name: 'Injection Administration (IM/IV)',
+            category: 'Procedures',
+            departmentId: departments[0].id,
+            baseRate: 100,
+            taxPercent: 0,
+            isActive: true,
+        },
+        // PHARMACY (Mapped as Services for direct billing if not linked to Inventory)
+        {
+            code: 'PH-PARA500',
+            name: 'Paracetamol 500mg (Strip of 10)',
+            category: 'Pharmacy',
+            departmentId: departments[0].id,
+            baseRate: 20,
+            taxPercent: 12, // GST
+            isActive: true,
+        },
+        {
+            code: 'PH-AMOX500',
+            name: 'Amoxicillin 500mg (Strip of 10)',
+            category: 'Pharmacy',
+            departmentId: departments[0].id,
+            baseRate: 85,
+            taxPercent: 12,
+            isActive: true,
+        },
+        {
+            code: 'ROOM-GEN',
+            name: 'General Ward Bed Charge (Per Day)',
+            category: 'Room',
+            departmentId: departments[0].id,
+            baseRate: 1000,
+            taxPercent: 0,
+            isActive: true,
+        },
+        {
+            code: 'ROOM-PVT',
+            name: 'Private Room Charge (Per Day)',
+            category: 'Room',
+            departmentId: departments[0].id,
+            baseRate: 2500,
+            taxPercent: 0,
+            isActive: true,
+        },
+    ];
+
+    for (const s of services) {
+        await prisma.serviceMaster.upsert({
+            where: { hospitalId_code: { hospitalId: hospital.id, code: s.code } },
+            update: {},
+            create: {
+                hospitalId: hospital.id,
+                ...s,
+                createdBy: 'system',
+                updatedBy: 'system',
+            },
+        });
+    }
+    console.log(`Created ${services.length} services`);
 
     // ========================================================================
     // SUMMARY
     // ========================================================================
     console.log('\n' + '='.repeat(60));
-    console.log('🎉 Database seeding completed successfully!');
+    console.log('Database seeding completed successfully!');
     console.log('='.repeat(60));
-    console.log('\n📋 Created resources:');
-    console.log(`   • Hospital: ${hospital.name} (Code: ${hospital.code})`);
-    console.log(`   • Roles: ${roles.length}`);
-    console.log(`   • Permissions: ${permissions.length}`);
-    console.log(`   • Departments: ${departments.length}`);
-    console.log('\n👤 Login credentials:');
+    console.log('\nCreated resources:');
+    console.log(`   - Hospital: ${hospital.name} (Code: ${hospital.code})`);
+    console.log(`   - Roles: ${roles.length}`);
+    console.log(`   - Permissions: ${permissions.length}`);
+    console.log(`   - Departments: ${departments.length}`);
+    console.log(`   - Services: ${services.length}`);
+    console.log('\nLogin credentials:');
     console.log('   Admin:');
     console.log('      Email: admin@hms-hospital.com');
     console.log('      Password: Admin@123');
@@ -504,7 +630,7 @@ async function main() {
 
 main()
     .catch((e) => {
-        console.error('❌ Seed failed:', e);
+        console.error('Seed failed:', e);
         process.exit(1);
     })
     .finally(async () => {

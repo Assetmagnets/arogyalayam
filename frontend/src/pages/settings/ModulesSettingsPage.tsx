@@ -23,6 +23,9 @@ import {
     ToggleRight,
     Lock,
     BarChart3,
+    Settings,
+    Stethoscope,
+    BedDouble,
 } from 'lucide-react';
 
 interface Module {
@@ -50,6 +53,9 @@ const iconMap: Record<string, React.ElementType> = {
     Receipt,
     UserCog,
     BarChart3,
+    Settings,
+    Stethoscope,
+    BedDouble,
 };
 
 export default function ModulesSettingsPage() {

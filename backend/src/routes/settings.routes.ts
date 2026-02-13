@@ -187,6 +187,7 @@ const AVAILABLE_MODULES = [
     { code: 'billing', name: 'Billing', description: 'Invoicing & payments', icon: 'Receipt' },
     { code: 'reports', name: 'Reports', description: 'Reports & analytics', icon: 'BarChart3' },
     { code: 'users', name: 'Users', description: 'User management', icon: 'UserCog' },
+    { code: 'settings', name: 'Settings', description: 'System settings', icon: 'Settings', alwaysEnabled: true },
 ];
 
 const UpdateModulesSchema = z.object({

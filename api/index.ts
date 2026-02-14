@@ -1272,7 +1272,7 @@ async function handleGetAdmission(req: VercelRequest, res: VercelResponse, id: s
                 },
                 nursingNotes: {
                     orderBy: { recordedAt: 'desc' },
-                    include: { createdBy: { select: { firstName: true, lastName: true } } } // If needed
+                    // include: { createdBy: { select: { firstName: true, lastName: true } } } // If needed
                 },
                 doctorRounds: {
                     orderBy: { roundDate: 'desc' },
@@ -1299,10 +1299,10 @@ async function handleGetAdmission(req: VercelRequest, res: VercelResponse, id: s
         // Map nursing notes to include recordedByName if available or just use createdBy
         const mappedAdmission = {
             ...admission,
-            nursingNotes: admission.nursingNotes.map(n => ({
+            nursingNotes: (admission as any).nursingNotes?.map((n: any) => ({
                 ...n,
                 recordedByName: n.recordedByName || 'Nurse'
-            }))
+            })) || []
         };
 
         return res.status(200).json({ success: true, data: mappedAdmission });
@@ -1329,7 +1329,6 @@ async function handleOpdQueue(req: VercelRequest, res: VercelResponse, doctorId:
                 doctorId,
                 queueDate: { gte: today, lt: tomorrow },
                 status: { not: 'COMPLETED' },
-                deletedAt: null
             },
             include: {
                 patient: {
@@ -1354,9 +1353,9 @@ async function handleOpdQueue(req: VercelRequest, res: VercelResponse, doctorId:
         });
 
         // Calculate age and format for frontend
-        const formattedQueue = queue.map(item => {
+        const formattedQueue = queue.map((item: any) => {
             let age = 0;
-            if (item.patient.dateOfBirth) {
+            if (item.patient?.dateOfBirth) {
                 const dob = new Date(item.patient.dateOfBirth);
                 const diffMs = Date.now() - dob.getTime();
                 const ageDt = new Date(diffMs);

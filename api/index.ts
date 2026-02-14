@@ -35,6 +35,8 @@ const AVAILABLE_MODULES = [
     { code: 'appointments', name: 'Appointments', description: 'Appointment scheduling', icon: 'Calendar' },
     { code: 'opd', name: 'OPD', description: 'Outpatient department & queue management', icon: 'Stethoscope' },
     { code: 'ipd', name: 'IPD', description: 'Inpatient department management', icon: 'Bed' },
+    { code: 'lab', name: 'Laboratory', description: 'Lab tests & results', icon: 'TestTube2' },
+    { code: 'emr', name: 'EMR', description: 'Electronic Medical Records', icon: 'FileText' },
     { code: 'billing', name: 'Billing', description: 'Billing & invoicing', icon: 'Receipt' },
     { code: 'pharmacy', name: 'Pharmacy', description: 'Pharmacy & inventory', icon: 'Pill' },
     { code: 'reports', name: 'Reports', description: 'Reports & analytics', icon: 'BarChart3' },
@@ -795,6 +797,7 @@ async function handleGetModules(req: VercelRequest, res: VercelResponse) {
                     ...m,
                     enabled: enabledModules.includes(m.code),
                 })),
+                _debug_version: '1.3-api-fix-verified',
             },
         });
     } catch (error) {

@@ -36,6 +36,8 @@ const AVAILABLE_MODULES = [
     { code: 'opd', name: 'OPD', description: 'Outpatient department & queue management', icon: 'Stethoscope' },
     { code: 'ipd', name: 'IPD', description: 'Inpatient department management', icon: 'Bed' },
     { code: 'lab', name: 'Laboratory', description: 'Lab tests & results', icon: 'TestTube2' },
+    { code: 'xray', name: 'X-Ray', description: 'Radiology & Imaging', icon: 'Scan' },
+    { code: 'mri', name: 'MRI', description: 'Magnetic Resonance Imaging', icon: 'Magnet' },
     { code: 'emr', name: 'EMR', description: 'Electronic Medical Records', icon: 'FileText' },
     { code: 'billing', name: 'Billing', description: 'Billing & invoicing', icon: 'Receipt' },
     { code: 'pharmacy', name: 'Pharmacy', description: 'Pharmacy & inventory', icon: 'Pill' },

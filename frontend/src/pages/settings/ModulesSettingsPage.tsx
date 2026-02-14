@@ -26,6 +26,8 @@ import {
     Settings,
     Stethoscope,
     BedDouble,
+    Scan,
+    Magnet,
 } from 'lucide-react';
 
 interface Module {
@@ -56,6 +58,8 @@ const iconMap: Record<string, React.ElementType> = {
     Settings,
     Stethoscope,
     BedDouble,
+    Scan,
+    Magnet,
 };
 
 export default function ModulesSettingsPage() {

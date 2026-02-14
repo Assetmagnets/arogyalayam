@@ -229,6 +229,7 @@ router.get(
                         ...m,
                         isEnabled: m.alwaysEnabled || enabledSet.has(m.code),
                     })),
+                    _debug_version: '1.2-lab-fix-verified',
                 },
             });
         } catch (error) {
